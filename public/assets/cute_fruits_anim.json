@@ -1,0 +1,172 @@
+{
+    "anims": [
+        {
+            "key": "apple_walk",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "apple_walk_1"
+                },
+                {
+                    "key": "cute_fruits",
+                    "frame": "apple_walk_2"
+                }
+            ]
+        },
+        {
+            "key": "apple_idle",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "apple_idle_1"
+                }
+            ]
+        },
+        {
+            "key": "lemon_walk",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "lemon_walk_1"
+                },
+                {
+                    "key": "cute_fruits",
+                    "frame": "lemon_walk_2"
+                }
+            ]
+        },
+        {
+            "key": "lemon_idle",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "lemon_idle_1"
+                }
+            ]
+        },
+        {
+            "key": "orange_walk",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "orange_walk_1"
+                },
+                {
+                    "key": "cute_fruits",
+                    "frame": "orange_walk_2"
+                }
+            ]
+        },
+        {
+            "key": "orange_idle",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "orange_idle_1"
+                }
+            ]
+        },
+        {
+            "key": "pear_walk",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "pear_walk_1"
+                },
+                {
+                    "key": "cute_fruits",
+                    "frame": "pear_walk_2"
+                }
+            ]
+        },
+        {
+            "key": "pear_idle",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "pear_idle_1"
+                }
+            ]
+        },
+        {
+            "key": "strawberry_walk",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "strawberry_walk_1"
+                },
+                {
+                    "key": "cute_fruits",
+                    "frame": "strawberry_walk_2"
+                }
+            ]
+        },
+        {
+            "key": "strawberry_idle",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "strawberry_idle_1"
+                }
+            ]
+        },
+        {
+            "key": "watermelon_walk",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "watermelon_walk_1"
+                },
+                {
+                    "key": "cute_fruits",
+                    "frame": "watermelon_walk_2"
+                }
+            ]
+        },
+        {
+            "key": "watermelon_idle",
+            "type": "frames",
+            "repeat": -1,
+            "frameRate": 6,
+            "frames": [
+                {
+                    "key": "cute_fruits",
+                    "frame": "watermelon_idle_1"
+                }
+            ]
+        }
+    ]
+}

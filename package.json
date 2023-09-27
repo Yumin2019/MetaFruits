@@ -13,6 +13,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "nodemon": "^3.0.1",
+    "phaser-matter-collision-plugin": "^1.0.0",
     "socket.io": "^4.7.2",
     "tmx-parser": "^1.5.0"
   }

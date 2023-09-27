@@ -1,0 +1,242 @@
+{
+  "frames": [
+    {
+      "filename": "watermelon_idle_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 0
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "watermelon_walk_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 32
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "watermelon_walk_2",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 32,
+        "y": 32
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "strawberry_idle_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "strawberry_walk_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 96
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "strawberry_walk_2",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 32,
+        "y": 96
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "pear_idle_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 128
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "pear_walk_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 160
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "pear_walk_2",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 32,
+        "y": 160
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "orange_idle_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 192
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "orange_walk_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 224
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "orange_walk_2",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 32,
+        "y": 224
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "lemon_idle_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 256
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "lemon_walk_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 288
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "lemon_walk_2",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 32,
+        "y": 288
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "apple_idle_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 320
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "apple_walk_1",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 0,
+        "y": 352
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "apple_walk_2",
+      "frame": {
+        "w": 32,
+        "h": 32,
+        "x": 32,
+        "y": 352
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ],
+  "meta": {
+    "description": "Atlas generado con Atlas Packer Gamma V2",
+    "web": "https://gammafp.github.io/atlas-packer-phaser/"
+  }
+}
