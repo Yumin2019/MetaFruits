@@ -638,6 +638,11 @@
                  "id":64,
                  "properties":[
                         {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
                          "name":"collides",
                          "type":"bool",
                          "value":false
@@ -647,6 +652,11 @@
                  "id":65,
                  "properties":[
                         {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
                          "name":"collides",
                          "type":"bool",
                          "value":false
@@ -655,6 +665,11 @@
                 {
                  "id":66,
                  "properties":[
+                        {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
                         {
                          "name":"collides",
                          "type":"bool",
@@ -782,6 +797,11 @@
                  "id":80,
                  "properties":[
                         {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
                          "name":"collides",
                          "type":"bool",
                          "value":false
@@ -791,6 +811,11 @@
                  "id":81,
                  "properties":[
                         {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
                          "name":"collides",
                          "type":"bool",
                          "value":false
@@ -799,6 +824,11 @@
                 {
                  "id":82,
                  "properties":[
+                        {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
                         {
                          "name":"collides",
                          "type":"bool",
@@ -927,6 +957,11 @@
                  "id":96,
                  "properties":[
                         {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
                          "name":"collides",
                          "type":"bool",
                          "value":false
@@ -936,6 +971,11 @@
                  "id":97,
                  "properties":[
                         {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
                          "name":"collides",
                          "type":"bool",
                          "value":false
@@ -944,6 +984,11 @@
                 {
                  "id":98,
                  "properties":[
+                        {
+                         "name":"Depth",
+                         "type":"int",
+                         "value":2
+                        }, 
                         {
                          "name":"collides",
                          "type":"bool",
@@ -4129,12 +4174,107 @@
          "tileheight":32,
          "tiles":[
                 {
+                 "id":0,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":1,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":2,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":3,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":4,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":5,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":6,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":7,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":8,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":9,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
                  "id":10,
                  "properties":[
                         {
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4144,6 +4284,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4153,6 +4298,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4162,6 +4312,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4171,6 +4326,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4180,6 +4340,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4189,6 +4354,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4198,6 +4368,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4207,6 +4382,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4216,6 +4396,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4325,7 +4510,8 @@
                          "type":"bool",
                          "value":true
                         }]
-                }, 
+                },
+            
                 {
                  "id":32,
                  "properties":[
@@ -4368,12 +4554,107 @@
          "tileheight":32,
          "tiles":[
                 {
+                 "id":0,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":1,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":2,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":3,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":4,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":5,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":6,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":7,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":8,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
+                 "id":9,
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
+                        }]
+                }, 
+                {
                  "id":10,
                  "properties":[
                         {
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4383,6 +4664,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4392,6 +4678,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4401,6 +4692,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4410,6 +4706,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4419,6 +4720,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4428,6 +4734,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4437,6 +4748,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4446,6 +4762,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4455,6 +4776,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"depth",
+                         "type":"int",
+                         "value":2
                         }]
                 }, 
                 {
@@ -4564,7 +4890,8 @@
                          "type":"bool",
                          "value":true
                         }]
-                }, 
+                },
+            
                 {
                  "id":32,
                  "properties":[

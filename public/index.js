@@ -46,6 +46,8 @@ class MainScene extends Phaser.Scene {
       0
     );
 
+    layer2.setDepth(10);
+
     layer1.setCollisionByProperty({
       collides: true,
     });
@@ -59,8 +61,8 @@ class MainScene extends Phaser.Scene {
   createPlayer() {
     this.player = new Player({
       scene: this,
-      x: 0,
-      y: 0,
+      x: 250,
+      y: 250,
       texture: "cute_fruits",
       frame: "apple_idle_1",
     });
@@ -84,14 +86,13 @@ class MainScene extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  type: Phaser.WEBGL,
   width: 512,
   height: 512,
   backgroundColor: "#999999",
   parent: "survival-game",
   scene: [MainScene],
   scale: {
-    zoom: 2,
+    zoom: 1,
   },
   physics: {
     default: "matter",
