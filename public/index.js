@@ -26,6 +26,9 @@ class MainScene extends Phaser.Scene {
       tileHeight: 32,
     });
 
+    this.mapWidth = map["widthInPixels"];
+    this.mapHeight = map["heightInPixels"];
+
     // add tileset images to map
     map.addTilesetImage("beach_tileset");
     map.addTilesetImage("beach_tileset2");
@@ -33,29 +36,34 @@ class MainScene extends Phaser.Scene {
     map.addTilesetImage("house2");
 
     // create map's layer with layer name(Tiled) and used tileset
-    const layer1 = map.createLayer(
-      "Tile Layer 1",
+    const backgroundLayer = map.createLayer(
+      "Background",
       ["beach_tileset", "beach_tileset2"],
       0,
       0
     );
-    const layer2 = map.createLayer(
-      "Tile Layer 2",
+    const itemsLayer = map.createLayer(
+      "Items",
       ["beach_tileset", "house1", "house2"],
       0,
       0
     );
 
-    layer2.setDepth(10);
+    const bridgeLayer = map.createLayer("Bridge", ["beach_tileset"], 0, 0);
 
-    layer1.setCollisionByProperty({
+    itemsLayer.setDepth(10);
+    backgroundLayer.setCollisionByProperty({
       collides: true,
     });
-    layer2.setCollisionByProperty({
+    bridgeLayer.setCollisionByProperty({
       collides: true,
     });
-    this.matter.world.convertTilemapLayer(layer1);
-    this.matter.world.convertTilemapLayer(layer2);
+    itemsLayer.setCollisionByProperty({
+      collides: true,
+    });
+    this.matter.world.convertTilemapLayer(backgroundLayer);
+    this.matter.world.convertTilemapLayer(bridgeLayer);
+    this.matter.world.convertTilemapLayer(itemsLayer);
   }
 
   createPlayer() {
@@ -77,6 +85,11 @@ class MainScene extends Phaser.Scene {
   create() {
     this.createTileMap();
     this.createPlayer();
+
+    // add main camera to player
+    this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
+    this.matter.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
+    this.cameras.main.startFollow(this.player);
   }
 
   update() {
@@ -92,7 +105,7 @@ const config = {
   parent: "survival-game",
   scene: [MainScene],
   scale: {
-    zoom: 1,
+    zoom: 2,
   },
   physics: {
     default: "matter",
