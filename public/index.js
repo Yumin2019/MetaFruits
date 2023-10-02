@@ -11,8 +11,8 @@ class MainScene extends Phaser.Scene {
     Player.preload(this);
 
     // this images are used by tilemap
-    this.load.image("beach_tileset", "assets/beach_tileset.png");
-    this.load.image("beach_tileset2", "assets/beach_tileset2.png");
+    this.load.image("beach_tileset", "assets/beach_tileset_extruded.png");
+    this.load.image("beach_tileset2", "assets/beach_tileset2_extruded.png");
     this.load.image("house1", "assets/house1.png");
     this.load.image("house2", "assets/house2.png");
     this.load.tilemapTiledJSON("main_map", "assets/main_map.json");
@@ -30,10 +30,10 @@ class MainScene extends Phaser.Scene {
     this.mapHeight = map["heightInPixels"];
 
     // add tileset images to map
-    map.addTilesetImage("beach_tileset");
-    map.addTilesetImage("beach_tileset2");
-    map.addTilesetImage("house1");
-    map.addTilesetImage("house2");
+    map.addTilesetImage("beach_tileset", "beach_tileset", 34, 34, 0, 0);
+    map.addTilesetImage("beach_tileset2", "beach_tileset2", 34, 34, 0, 0);
+    map.addTilesetImage("house1", "house1", 32, 32, 0, 0);
+    map.addTilesetImage("house2", "house2", 32, 32, 0, 0);
 
     // create map's layer with layer name(Tiled) and used tileset
     const backgroundLayer = map.createLayer(
@@ -99,18 +99,20 @@ class MainScene extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  width: 512,
-  height: 512,
+  width: 800,
+  height: 400,
   backgroundColor: "#999999",
   parent: "survival-game",
   scene: [MainScene],
   scale: {
     zoom: 2,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.FIT,
   },
   physics: {
     default: "matter",
     matter: {
-      debug: true,
+      debug: false,
       gravity: { y: 0 },
     },
   },
