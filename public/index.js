@@ -1,5 +1,6 @@
 // const socket = io(`ws://localhost:3000`);
 
+import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
 
 const config = {
@@ -8,7 +9,7 @@ const config = {
   height: 300,
   backgroundColor: "#999999",
   parent: "survival-game",
-  scene: [MainScene],
+  scene: [MainScene, HouseScene],
   scale: {
     zoom: 2,
     autoCenter: Phaser.Scale.CENTER_BOTH,
