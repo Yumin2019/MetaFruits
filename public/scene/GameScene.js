@@ -143,9 +143,55 @@ export default class GameScene extends Phaser.Scene {
 
   createCamera() {
     // add main camera to player
-    this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
+    this.cameras.main
+      .setBounds(0, 0, this.mapWidth, this.mapHeight)
+      .setName("MainCamera");
     this.matter.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
     this.cameras.main.startFollow(this.player);
+
+    // 미니맵 추가
+    let { width, height } = this.game.canvas;
+
+    // offset 0.5, leftTop을 기준으로 배치한다.
+    this.minimapBackground = this.add
+      .rectangle(
+        parseInt(this.mapWidth * 0.05 + width - this.mapWidth * 0.1) - 4,
+        parseInt(this.mapHeight * 0.05 + height - this.mapHeight * 0.1) - 4,
+        parseInt(this.mapWidth * 0.1) + 8,
+        parseInt(this.mapHeight * 0.1) + 8,
+        0x9dde85
+      )
+      .setDepth(100)
+      .setScrollFactor(0);
+
+    this.minimap = this.cameras
+      .add(
+        parseInt(width - this.mapWidth * 0.1) - 4,
+        parseInt(height - this.mapHeight * 0.1) - 4,
+        parseInt(this.mapWidth * 0.1),
+        parseInt(this.mapHeight * 0.1)
+      )
+      .setZoom(0.1)
+      .setName("MiniMap")
+      .setScroll(this.mapWidth * 0.45, this.mapHeight * 0.45)
+      .ignore(this.minimapBackground); // ignore background object
+
+    // 미니앱이 off 상태인 경우, 생성까지만 진행한다.
+    if (!this.game.global.minimap) {
+      this.minimapBackground.setActive(false).setVisible(false);
+      this.cameras.remove(this.minimap, false);
+    }
+  }
+
+  static toggleMinimap(scene) {
+    let flag = !scene.minimapBackground.active;
+    scene.game.global.minimap = flag;
+    scene.minimapBackground.setActive(flag).setVisible(flag);
+
+    // remove: 카메라를 재사용하는 경우 2번째 인자를 false로 주고,
+    // 나중에 CameraManager에 해당 카메라를 추가하여 사용한다.
+    if (flag) scene.cameras.addExisting(scene.minimap);
+    else scene.cameras.remove(scene.minimap, false);
   }
 
   createPortal(portalData) {

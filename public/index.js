@@ -41,10 +41,15 @@ const game = new Phaser.Game(config);
 
 game.global = {
   // global variables
+  minimap: true,
 };
 
 const chattingInput = document.getElementById("chatting-input");
 const chattingList = document.getElementById("chatting-list");
+const chattingForm = document.getElementById("chatting-form");
+const chattingOpen = document.getElementById("chatting-open");
+const chattingClose = document.getElementById("chatting-close");
+const chattingContainer = document.getElementById("chatting-container");
 
 // 채팅 입력창 Focusing 처리
 chattingInput.addEventListener("focusin", (event) => {
@@ -61,6 +66,21 @@ game.canvas.addEventListener("mousedown", (event) => {
   chattingInput.blur();
 });
 
+// ignore submit
+chattingForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+});
+
+// 채팅 On/Off
+chattingOpen.addEventListener("click", (event) => {
+  chattingContainer.style.display = "block";
+});
+
+chattingClose.addEventListener("click", (event) => {
+  chattingContainer.style.display = "none";
+});
+
+// 채팅 엔터키
 chattingInput.addEventListener("keyup", (event) => {
   if (event.key === "Enter" && chattingInput.value.length > 0) {
     // 플레이어 상단에 메시지를 표출한다.
@@ -76,3 +96,48 @@ chattingInput.addEventListener("keyup", (event) => {
     chattingList.scrollTop = chattingList.scrollHeight;
   }
 });
+
+const characterButton = document.getElementById("character-button");
+const nameButton = document.getElementById("name-button");
+const cameraButton = document.getElementById("camera-button");
+const mikeButton = document.getElementById("mike-button");
+const settingButton = document.getElementById("setting-button");
+const minimapButton = document.getElementById("minimap-button");
+
+characterButton.addEventListener("click", (event) => {
+  console.log("characterButton");
+  // <!-- 🍎🍓🍉🍐🍊🍋 -->
+  // 캐릭터 변경
+});
+
+nameButton.addEventListener("click", (event) => {
+  console.log("nameButton");
+  // 이름 변경 다이얼로그 표시
+});
+
+cameraButton.addEventListener("click", (event) => {
+  console.log("cameraButton");
+  // 카메라 온오프, 상태 표시
+});
+
+mikeButton.addEventListener("click", (event) => {
+  console.log("mikeButton");
+  // 마이크 온오프, 상태 표시
+});
+
+settingButton.addEventListener("click", (event) => {
+  // 설정 다이얼로그 처리
+  console.log("settingButton");
+});
+
+minimapButton.addEventListener("click", (event) => {
+  console.log("minimapButton");
+  let scenes = game.scene.getScenes();
+  GameScene.toggleMinimap(scenes.at(0));
+});
+
+// <div class="controller-charactor">🍎</div>
+// <div class="controller-text">김유민</div>
+// <div class="controller-camera">📷</div>
+// <div class="controller-mike">🎤</div>
+// <div class="controller-setting">⚙️</div>

@@ -93,12 +93,168 @@
     .msger-change-btn:hover {
       background: rgb(0, 145, 255);
     }
+
+    /* 채팅 닫기 버튼 */
+    .chatting-close {
+      width: 28px;
+      height: 28px;
+      position: absolute;
+      right: 0px;
+    }
+  </style>
+
+  <style>
+    /* 좌측 하단 floating 버튼 */
+    .parent button {
+      background-color: #48abe0;
+      color: white;
+      border: none;
+      padding: 5px;
+      font-size: 32px;
+      height: 64px;
+      width: 64px;
+      box-shadow: 0 2px 4px darkslategray;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 70%;
+    }
+
+    .parent button:active {
+      background-color: rgb(37, 170, 242);
+      box-shadow: 0 0 2px darkslategray;
+      transform: translateY(2px);
+    }
+
+    /* 채팅 활성화 버튼 */
+    .chatting-floating {
+      left: 32px;
+      bottom: 24px;
+      position: absolute;
+      z-index: 100;
+    }
+
+    .controller {
+      background-color: #c2c2c2;
+      color: white;
+      border: none;
+      padding: 5px;
+      height: 48px;
+      width: 462px;
+      cursor: pointer;
+      position: absolute;
+      box-shadow: 0 2px 4px darkslategray;
+      border-radius: 64px;
+      left: calc(50% - 215px);
+      bottom: 24px;
+    }
+
+    .controller-charactor {
+      font-size: 32px;
+      position: absolute;
+      left: 32px;
+    }
+
+    .controller-charactor:hover {
+      background-color: #ffffff;
+      border-radius: 40%;
+      padding: 2px;
+    }
+
+    .controller-text {
+      font-size: 22px;
+      color: black;
+      position: absolute;
+      text-align: center;
+      top: 14px;
+      left: 96px;
+      right: 288px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .controller-text:hover {
+      background-color: #ffffff;
+      border-radius: 16px;
+    }
+
+    .controller-camera {
+      width: 43px;
+      height: 43px;
+      position: absolute;
+      right: 224px;
+      font-size: 32px;
+    }
+
+    .controller-camera:hover {
+      background-color: #ffffff;
+      border-radius: 40%;
+      padding: 2px;
+    }
+
+    .controller-mike {
+      width: 43px;
+      height: 43px;
+      position: absolute;
+      right: 160px;
+      font-size: 32px;
+    }
+
+    .controller-mike:hover {
+      background-color: #ffffff;
+      border-radius: 40%;
+      padding: 2px;
+    }
+
+    .controller-setting {
+      width: 43px;
+      height: 43px;
+      position: absolute;
+      right: 96px;
+      font-size: 32px;
+    }
+
+    .controller-setting:hover {
+      background-color: #ffffff;
+      border-radius: 40%;
+      padding: 2px;
+    }
+
+    .controller-minimap {
+      width: 43px;
+      height: 43px;
+      position: absolute;
+      right: 32px;
+      font-size: 32px;
+    }
+
+    .controller-minimap:hover {
+      background-color: #ffffff;
+      border-radius: 40%;
+      padding: 2px;
+    }
   </style>
 
   <body id="game-root">
-    <section class="msger">
+    <!-- 채팅 활성화 버튼 -->
+    <div class="parent">
+      <button id="chatting-open" class="chatting-floating">💬</button>
+    </div>
+    <div class="controller">
+      <!-- 🍎🍓🍉🍐🍊🍋 -->
+      <div id="character-button" class="controller-charactor">🍎</div>
+      <div id="name-button" class="controller-text">김유민</div>
+      <div id="camera-button" class="controller-camera">📷</div>
+      <div id="mike-button" class="controller-mike">🎤</div>
+      <div id="setting-button" class="controller-setting">⚙️</div>
+      <div id="minimap-button" class="controller-minimap">🗺️</div>
+    </div>
+
+    <!-- 채팅 영역  -->
+    <section id="chatting-container" class="msger">
+      <button id="chatting-close" class="chatting-close">X</button>
       <div id="chatting-list" class="msger-chat"></div>
-      <form class="msger-inputarea">
+      <form id="chatting-form" class="msger-inputarea">
         <button class="msger-change-btn">전체</button>
         <input
           id="chatting-input"
