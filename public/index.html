@@ -6,5 +6,107 @@
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="/index.js"></script>
   </head>
-  <body></body>
+
+  <style>
+    #game-root {
+      position: relative;
+    }
+
+    /* 채팅 전체 영역 */
+    .msger {
+      display: flex;
+      flex-flow: column wrap;
+      justify-content: space-between;
+      width: 304px;
+      height: 300px;
+      border: var(--border);
+      border-radius: 5px;
+      background: white;
+      box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2);
+      left: 24px;
+      bottom: 16px;
+      position: absolute;
+      z-index: 100;
+    }
+
+    /* 채팅 영역 style */
+    .msger-chat {
+      overflow: auto;
+      height: 239px;
+    }
+
+    /* 채팅 영억 scrollbar */
+    .msger-chat::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .msger-chat::-webkit-scrollbar-thumb {
+      background-color: rgb(162, 162, 162);
+      border-radius: 10px;
+      background-clip: padding-box;
+      border: 2px solid transparent;
+    }
+
+    .msger-chat::-webkit-scrollbar-track {
+      background-color: rgb(207, 207, 207);
+      border-radius: 10px;
+      box-shadow: inset 0px 0px 5px white;
+    }
+
+    /* 채팅 text style */
+    .msger-text {
+      padding: 4px 8px;
+      max-width: 304px;
+      font-size: 14px;
+      word-break: break-all;
+    }
+
+    /* 입력 하는 공간 container */
+    .msger-inputarea {
+      display: flex;
+      padding: 10px;
+      border-top: var(--border);
+      background: #eee;
+    }
+
+    .msger-inputarea * {
+      padding: 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 1em;
+    }
+
+    .msger-input {
+      flex: 1;
+      background: #ddd;
+    }
+
+    .msger-change-btn {
+      margin-right: 10px;
+      background: rgb(0, 200, 255);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.23s;
+    }
+
+    .msger-change-btn:hover {
+      background: rgb(0, 145, 255);
+    }
+  </style>
+
+  <body id="game-root">
+    <section class="msger">
+      <div id="chatting-list" class="msger-chat" />
+      <form class="msger-inputarea">
+        <button class="msger-change-btn">전체</button>
+        <input
+          id="chatting-input"
+          type="text"
+          class="msger-input"
+          placeholder="Enter your message..."
+        />
+      </form>
+    </section>
+  </body>
 </html>

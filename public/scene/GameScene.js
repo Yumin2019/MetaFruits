@@ -2,8 +2,7 @@ import Player from "../Player.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor(data) {
-    // sceneName: Phaser Scene 변수
-    // mapName: map json 이름
+    // sceneName: Phaser Scene 변수, mapName: map json 이름
     const { sceneName, mapName } = data;
     super({
       key: sceneName,
@@ -27,38 +26,126 @@ export default class GameScene extends Phaser.Scene {
     this.load.tilemapTiledJSON(this.mapName, `../assets/${this.mapName}.json`);
   }
 
+  static setMessage(scene, message) {
+    // 받은 메시지를 토대로 메시지를 표출한다.
+    // 메시지가 너무 긴 경우 잘라서 처리한다.
+    let text = "";
+    if (message.length <= 25) {
+      text = message;
+    } else {
+      let count = parseInt(message.length / 25) + 1;
+      for (let i = 0; i < count; i++) {
+        text += message.substring(i * 25, (i + 1) * 25);
+        if (i != count - 1) text += "\n";
+      }
+    }
+
+    scene.messageRect.clear();
+    scene.messageText.setText(text);
+    scene.container.setActive(true).setVisible(true);
+    if (scene.tweenAnim) scene.tweenAnim.destroy();
+
+    scene.messageWidth = scene.messageText.width + scene.messagePadding * 2;
+    scene.messageHeight = scene.messageText.height + scene.messagePadding * 2;
+    scene.messageRect
+      .lineStyle(2, 0x000000, 1)
+      .fillStyle(0xffffff, 1.0)
+      .fillRoundedRect(0, 0, scene.messageWidth, scene.messageHeight, 5)
+      .strokeRoundedRect(0, 0, scene.messageWidth, scene.messageHeight, 5);
+
+    // Tween 애니메이션은 재활용이 안 된다.
+    scene.tweenAnim = scene.tweens.add({
+      targets: [scene.container],
+      ease: "Sine.easeInOut",
+      duration: 4000,
+      alpha: {
+        getStart: () => 1.0,
+        getEnd: () => 0.0,
+      },
+      onComplete: () => {
+        scene.container.setActive(false).setVisible(false);
+      },
+    });
+  }
+
+  createMessageContainer() {
+    // 메시지 컨테이너를 생성한다. 세부 설정은 하지 않음
+    this.messageWidth = 0;
+    this.messageHeight = 0;
+    this.messagePadding = 2;
+
+    // positions are relative to the container
+    this.messageRect = this.add.graphics();
+    this.messageText = this.add
+      .text(this.messagePadding, this.messagePadding, "")
+      .setFont("10px")
+      .setColor("#000000");
+
+    this.container = this.add
+      .container(0, 0, [this.messageRect, this.messageText])
+      .setDepth(100)
+      .setVisible(false)
+      .setActive(false);
+  }
+
   create() {
     this.createTileMap();
     this.createPlayer();
-    this.createTextInfo();
-
-    // add main camera to player
-    this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
-    this.matter.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
-    this.cameras.main.startFollow(this.player);
+    this.createText();
+    this.createMessageContainer();
+    this.createCamera();
   }
 
   updateTextInfo() {
+    // update left top info text
     this.posText.setText(
       `x: ${Math.round(this.player.x)}\ny: ${Math.round(
         this.player.y
       )}\nfps: ${Math.round(this.game.loop.actualFps)}`
     );
+
+    // update name text
+    this.nameText.x = this.player.x - this.nameText.width * 0.5;
+    this.nameText.y =
+      this.player.y - this.player.height * 0.5 - this.nameText.height;
+  }
+
+  updateMessageContainer() {
+    // player's offset is 0.5
+    // x는 중간에 오도록 처리하고 y는 플레이어 상단 기준에서 메시지 크기 만큼 올린다. (12 is yOffset)
+    if (this.container.visible) {
+      this.container.x = this.player.x - this.messageWidth * 0.5;
+      this.container.y =
+        this.player.y - this.player.height * 0.5 - this.messageHeight - 12;
+    }
   }
 
   update() {
     this.player.update();
     this.updateTextInfo();
+    this.updateMessageContainer();
   }
 
-  createTextInfo() {
+  createText() {
     this.posText = this.add
-      .text(8, 8, "", {
+      .text(0, 0, "", {
         font: "16px",
         fill: "#000000",
       })
       .setScrollFactor(0)
       .setDepth(100);
+
+    this.nameText = this.add
+      .text(0, 0, "apple")
+      .setFont("10px")
+      .setColor("#000000");
+  }
+
+  createCamera() {
+    // add main camera to player
+    this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
+    this.matter.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
+    this.cameras.main.startFollow(this.player);
   }
 
   createPortal(portalData) {
@@ -103,6 +190,7 @@ export default class GameScene extends Phaser.Scene {
       0,
       0
     );
+
     const itemsLayer = map.createLayer(
       "Items",
       ["beach_tileset", "house1", "house2"],
@@ -116,12 +204,15 @@ export default class GameScene extends Phaser.Scene {
     backgroundLayer.setCollisionByProperty({
       collides: true,
     });
+
     bridgeLayer.setCollisionByProperty({
       collides: true,
     });
+
     itemsLayer.setCollisionByProperty({
       collides: true,
     });
+
     this.matter.world.convertTilemapLayer(backgroundLayer);
     this.matter.world.convertTilemapLayer(bridgeLayer);
     this.matter.world.convertTilemapLayer(itemsLayer);
@@ -135,6 +226,7 @@ export default class GameScene extends Phaser.Scene {
       texture: "cute_fruits",
       frame: "apple_idle_1",
     });
+
     this.player.inputKeys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
