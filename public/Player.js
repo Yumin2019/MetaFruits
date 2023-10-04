@@ -54,9 +54,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.setVelocity(playerVelocity.x, playerVelocity.y);
 
     if (playerVelocity.x === 0 && playerVelocity.y === 0) {
-      this.anims.play("apple_idle", true);
+      this.anims.play(`${this.scene.game.global.character}_idle`, true);
     } else {
-      this.anims.play("apple_walk", true);
+      this.anims.play(`${this.scene.game.global.character}_walk`, true);
     }
   }
 }

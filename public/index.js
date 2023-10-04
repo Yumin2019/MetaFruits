@@ -37,11 +37,34 @@ const config = {
   },
 };
 
+function randomNameGenerator(num) {
+  let res = "";
+  for (let i = 0; i < num; i++) {
+    const random = Math.floor(Math.random() * 25); // 0 ~ 25
+    res += String.fromCharCode(97 + random); // a to z
+  }
+  return res;
+}
+
+function getCurScene() {
+  return game.scene.getScenes()[0];
+}
+
+function addChatting(text) {
+  let newDiv = document.createElement("div");
+  newDiv.innerHTML = text;
+  newDiv.className = "msger-text";
+  chattingList.appendChild(newDiv);
+  chattingList.scrollTop = chattingList.scrollHeight;
+}
+
 const game = new Phaser.Game(config);
 
 game.global = {
   // global variables
   minimap: true,
+  character: "apple",
+  name: randomNameGenerator(6),
 };
 
 const chattingInput = document.getElementById("chatting-input");
@@ -84,60 +107,122 @@ chattingClose.addEventListener("click", (event) => {
 chattingInput.addEventListener("keyup", (event) => {
   if (event.key === "Enter" && chattingInput.value.length > 0) {
     // 플레이어 상단에 메시지를 표출한다.
-    let scenes = game.scene.getScenes();
-    GameScene.setMessage(scenes.at(0), chattingInput.value);
+    GameScene.setMessage(getCurScene(), chattingInput.value);
 
     // 채팅창에 추가한다.
-    let newDiv = document.createElement("div");
-    newDiv.innerHTML = "apple: " + chattingInput.value;
-    newDiv.className = "msger-text";
-    chattingList.appendChild(newDiv);
+    addChatting(`${game.global.name}: ${chattingInput.value}`);
     chattingInput.value = "";
-    chattingList.scrollTop = chattingList.scrollHeight;
   }
 });
 
 const characterButton = document.getElementById("character-button");
 const nameButton = document.getElementById("name-button");
-const cameraButton = document.getElementById("camera-button");
-const mikeButton = document.getElementById("mike-button");
+
 const settingButton = document.getElementById("setting-button");
 const minimapButton = document.getElementById("minimap-button");
 
+const nameDialog = document.getElementById("nameDialog");
+const nameDialogInput = document.getElementById("nameDialog-input");
+const nameDialogOk = document.getElementById("nameDialog-ok");
+
+const cameraButton = document.getElementById("camera-button");
+const mikeButton = document.getElementById("mike-button");
+const cameraStatus = document.getElementById("camera-status");
+const mikeStatus = document.getElementById("mike-status");
+
+cameraStatus.style.display = "none";
+mikeStatus.style.display = "none";
+
 characterButton.addEventListener("click", (event) => {
-  console.log("characterButton");
-  // <!-- 🍎🍓🍉🍐🍊🍋 -->
-  // 캐릭터 변경
+  switch (game.global.character) {
+    case "apple":
+      characterButton.innerHTML = "🍓";
+      game.global.character = "strawberry";
+      break;
+    case "strawberry":
+      characterButton.innerHTML = "🍉";
+      game.global.character = "watermelon";
+      break;
+    case "watermelon":
+      characterButton.innerHTML = "🍐";
+      game.global.character = "pear";
+      break;
+    case "pear":
+      characterButton.innerHTML = "🍊";
+      game.global.character = "orange";
+      break;
+    case "orange":
+      characterButton.innerHTML = "🍋";
+      game.global.character = "lemon";
+      break;
+    case "lemon":
+      characterButton.innerHTML = "🍎";
+      game.global.character = "apple";
+      break;
+  }
+
+  GameScene.setMessage(
+    getCurScene(),
+    `Changed character to ${characterButton.innerHTML}`
+  );
+  addChatting(
+    `${game.global.name} changed character to ${characterButton.innerHTML}`
+  );
 });
 
+nameButton.innerText = game.global.name;
 nameButton.addEventListener("click", (event) => {
-  console.log("nameButton");
-  // 이름 변경 다이얼로그 표시
+  nameDialog.show();
+  game.input.keyboard.enabled = false;
+  nameDialogInput.value = game.global.name;
+});
+
+nameDialog.addEventListener("close", (event) => {
+  game.input.keyboard.enabled = true;
+});
+
+nameDialogOk.addEventListener("click", (event) => {
+  let name = nameDialogInput.value;
+  if (name === game.global.name || name.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  GameScene.setMessage(getCurScene(), `Changed name to ${name}`);
+  addChatting(`${game.global.name} changed name to ${name}`);
+
+  // 글로벌변수, 하단이름, 캐릭터 이름을 갱신한다.
+  game.global.name = name;
+  nameButton.innerText = name;
+  GameScene.setName(getCurScene(), name);
 });
 
 cameraButton.addEventListener("click", (event) => {
-  console.log("cameraButton");
   // 카메라 온오프, 상태 표시
+  if (cameraStatus.style.display === "block") {
+    cameraStatus.style.display = "none";
+  } else {
+    cameraStatus.style.display = "block";
+  }
+
+  // 실제 처리
 });
 
 mikeButton.addEventListener("click", (event) => {
-  console.log("mikeButton");
   // 마이크 온오프, 상태 표시
+  if (mikeStatus.style.display === "block") {
+    mikeStatus.style.display = "none";
+  } else {
+    mikeStatus.style.display = "block";
+  }
+
+  // 실제 처리
 });
 
 settingButton.addEventListener("click", (event) => {
   // 설정 다이얼로그 처리
-  console.log("settingButton");
 });
 
 minimapButton.addEventListener("click", (event) => {
-  console.log("minimapButton");
-  let scenes = game.scene.getScenes();
-  GameScene.toggleMinimap(scenes.at(0));
+  GameScene.toggleMinimap(getCurScene());
 });
-
-// <div class="controller-charactor">🍎</div>
-// <div class="controller-text">김유민</div>
-// <div class="controller-camera">📷</div>
-// <div class="controller-mike">🎤</div>
-// <div class="controller-setting">⚙️</div>

@@ -26,6 +26,10 @@ export default class GameScene extends Phaser.Scene {
     this.load.tilemapTiledJSON(this.mapName, `../assets/${this.mapName}.json`);
   }
 
+  static setName(scene, name) {
+    scene.nameText.setText(name);
+  }
+
   static setMessage(scene, message) {
     // 받은 메시지를 토대로 메시지를 표출한다.
     // 메시지가 너무 긴 경우 잘라서 처리한다.
@@ -136,7 +140,7 @@ export default class GameScene extends Phaser.Scene {
       .setDepth(100);
 
     this.nameText = this.add
-      .text(0, 0, "apple")
+      .text(0, 0, this.game.global.name)
       .setFont("10px")
       .setColor("#000000");
   }
@@ -270,7 +274,7 @@ export default class GameScene extends Phaser.Scene {
       x: this.spawnPosX,
       y: this.spawnPosY,
       texture: "cute_fruits",
-      frame: "apple_idle_1",
+      frame: `${this.game.global.character}_idle_1`,
     });
 
     this.player.inputKeys = this.input.keyboard.addKeys({

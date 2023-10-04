@@ -94,8 +94,8 @@
       background: rgb(0, 145, 255);
     }
 
-    /* 채팅 닫기 버튼 */
-    .chatting-close {
+    /* 닫기 버튼 */
+    .close {
       width: 28px;
       height: 28px;
       position: absolute;
@@ -192,6 +192,15 @@
       padding: 2px;
     }
 
+    .controller-camera-status {
+      width: 43px;
+      height: 43px;
+      position: absolute;
+      right: 224px;
+      font-size: 32px;
+      pointer-events: none;
+    }
+
     .controller-mike {
       width: 43px;
       height: 43px;
@@ -204,6 +213,15 @@
       background-color: #ffffff;
       border-radius: 40%;
       padding: 2px;
+    }
+
+    .controller-mike-status {
+      width: 43px;
+      height: 43px;
+      position: absolute;
+      right: 160px;
+      font-size: 32px;
+      pointer-events: none;
     }
 
     .controller-setting {
@@ -233,9 +251,43 @@
       border-radius: 40%;
       padding: 2px;
     }
+
+    .nameDialog {
+      position: absolute;
+      top: 45%;
+      width: 200px;
+      height: fit-content;
+      border-radius: 20px;
+      border-color: #48abe0;
+    }
+
+    .nameDialog-close {
+      width: 28px;
+      height: 28px;
+      position: absolute;
+      right: 8px;
+    }
   </style>
 
   <body id="game-root">
+    <!-- 이름 변경 Dialog  -->
+    <dialog id="nameDialog" class="nameDialog">
+      <form method="dialog">
+        <button id="nameDialog-close" class="nameDialog-close">X</button>
+      </form>
+      <h2>닉네임 변경</h2>
+      <input
+        id="nameDialog-input"
+        type="text"
+        placeholder="Enter your name(max: 6)"
+        maxlength="6"
+        style="margin-bottom: 16px; width: 100%"
+      />
+      <form method="dialog">
+        <button id="nameDialog-ok" style="width: 100%">확인</button>
+      </form>
+    </dialog>
+
     <!-- 채팅 활성화 버튼 -->
     <div class="parent">
       <button id="chatting-open" class="chatting-floating">💬</button>
@@ -243,16 +295,18 @@
     <div class="controller">
       <!-- 🍎🍓🍉🍐🍊🍋 -->
       <div id="character-button" class="controller-charactor">🍎</div>
-      <div id="name-button" class="controller-text">김유민</div>
+      <div id="name-button" class="controller-text">Name</div>
       <div id="camera-button" class="controller-camera">📷</div>
       <div id="mike-button" class="controller-mike">🎤</div>
       <div id="setting-button" class="controller-setting">⚙️</div>
       <div id="minimap-button" class="controller-minimap">🗺️</div>
+      <div id="camera-status" class="controller-camera-status">❌</div>
+      <div id="mike-status" class="controller-mike-status">❌</div>
     </div>
 
     <!-- 채팅 영역  -->
     <section id="chatting-container" class="msger">
-      <button id="chatting-close" class="chatting-close">X</button>
+      <button id="chatting-close" class="close">X</button>
       <div id="chatting-list" class="msger-chat"></div>
       <form id="chatting-form" class="msger-inputarea">
         <button class="msger-change-btn">전체</button>
