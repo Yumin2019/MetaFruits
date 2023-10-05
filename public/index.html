@@ -105,7 +105,7 @@
 
   <style>
     /* 좌측 하단 floating 버튼 */
-    .parent button {
+    .chatting-enable button {
       background-color: #48abe0;
       color: white;
       border: none;
@@ -119,7 +119,7 @@
       border-radius: 70%;
     }
 
-    .parent button:active {
+    .chatting-enable button:active {
       background-color: rgb(37, 170, 242);
       box-shadow: 0 0 2px darkslategray;
       transform: translateY(2px);
@@ -133,6 +133,7 @@
       z-index: 100;
     }
 
+    /* 하단 컨트롤러 관련 CSS */
     .controller {
       background-color: #c2c2c2;
       color: white;
@@ -252,6 +253,7 @@
       padding: 2px;
     }
 
+    /* NameDialog 관련 CSS */
     .nameDialog {
       position: absolute;
       top: 45%;
@@ -267,9 +269,70 @@
       position: absolute;
       right: 8px;
     }
+
+    /* Video 관련 CSS  */
+    .video-parent {
+      display: table;
+      width: 100%;
+      position: absolute;
+      top: 0px;
+    }
+
+    .video-parent-inner {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .video-parent-content {
+      display: inline-block;
+    }
+
+    .video-div {
+      text-align: center;
+      float: left;
+      width: 180px;
+      height: 120px;
+      border-radius: 16px;
+      background-color: white;
+      /* border: 0.5px solid grey; */
+      border: 4px solid #48abe0;
+      margin: 8px;
+    }
+
+    .video {
+      border-radius: 8px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-status {
+      position: relative;
+      bottom: -8px;
+      border-radius: 16px;
+      background-color: rgba(255, 255, 255, 0.7);
+      font-size: 20px;
+    }
   </style>
 
   <body id="game-root">
+    <div class="video-parent">
+      <div class="video-parent-inner">
+        <!-- 비디오 리스트 -->
+        <div class="video-parent-content">
+          <!-- 비디오 div -->
+          <div class="video-div">
+            <video class="video"></video>
+            <div class="video-status">cam: ❌ mike: ✔️</div>
+          </div>
+          <div class="video-div">
+            <video class="video"></video>
+            <div class="video-status">cam: ❌ mike: ✔️</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 이름 변경 Dialog  -->
     <dialog id="nameDialog" class="nameDialog">
       <form method="dialog">
@@ -289,7 +352,7 @@
     </dialog>
 
     <!-- 채팅 활성화 버튼 -->
-    <div class="parent">
+    <div class="chatting-enable">
       <button id="chatting-open" class="chatting-floating">💬</button>
     </div>
     <div class="controller">
