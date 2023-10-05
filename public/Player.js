@@ -1,3 +1,5 @@
+import GameScene from "./scene/GameScene.js";
+
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(data) {
     let { scene, x, y, texture, frame } = data;
@@ -22,6 +24,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     this.setExistingBody(compoundBody);
     this.setFixedRotation();
+    this.isKeyPressed = false;
   }
 
   static preload(scene) {
@@ -34,7 +37,20 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   update() {
-    const speed = 5.0; //2.5;
+    // 미니맵 키
+    if (this.inputKeys.minimap.isDown) {
+      if (!this.isKeyPressed) {
+        this.isKeyPressed = true;
+        GameScene.toggleMinimap(this.scene);
+      }
+    }
+
+    if (this.inputKeys.minimap.isUp) {
+      this.isKeyPressed = false;
+    }
+
+    // 플레이어 이동
+    const speed = 5.0;
     let playerVelocity = new Phaser.Math.Vector2();
     if (this.inputKeys.left.isDown) {
       playerVelocity.x = -1;

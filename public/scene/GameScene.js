@@ -282,6 +282,7 @@ export default class GameScene extends Phaser.Scene {
       down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
+      minimap: Phaser.Input.Keyboard.KeyCodes.M,
     });
   }
 }
