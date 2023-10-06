@@ -313,6 +313,74 @@
       background-color: rgba(255, 255, 255, 0.7);
       font-size: 20px;
     }
+
+    /* DeviceDialog 관련 CSS */
+    .deviceDialog {
+      position: absolute;
+      top: 35%;
+      width: 500px;
+      height: fit-content;
+      border-radius: 20px;
+      border-color: #48abe0;
+    }
+
+    .deviceDialog-close {
+      width: 28px;
+      height: 28px;
+      position: absolute;
+      right: 8px;
+    }
+
+    /* 드롭다운 */
+    /* Dropdown Button */
+    .dropbtn {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background-color: rgb(240, 240, 240);
+      width: 430px;
+      border-radius: 8px;
+      border: 1px solid black;
+      padding: 4px;
+      font-size: 20px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    /* The container <div> - needed to position the dropdown content */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Dropdown Content (Hidden by Default) */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      margin-left: 55px;
+      width: 430px;
+      box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+    }
+
+    /* Links inside the dropdown */
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* Change color of dropdown links on hover */
+    .dropdown-content a:hover {
+      background-color: #ddd;
+    }
+
+    /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+    .show {
+      display: block;
+    }
   </style>
 
   <body id="game-root">
@@ -332,6 +400,79 @@
         </div>
       </div>
     </div>
+
+    <!-- 장치 설정 Dialog -->
+    <dialog id="deviceDialog" class="deviceDialog">
+      <form method="dialog">
+        <button id="deviceDialog-close" class="deviceDialog-close">X</button>
+      </form>
+      <h2>장치 설정</h2>
+
+      <div class="dropdown">
+        <!-- 카메라 row -->
+        <div style="font-size: 32px; position: absolute; top: -6px; left: 0px">
+          📷
+        </div>
+        <div
+          id="cameraDropdownDiv"
+          class="dropbtn"
+          style="left: 50px; top: 0px"
+        >
+          카메라 메뉴
+        </div>
+        <div id="cameraDropdown" class="dropdown-content">
+          <a href="#">카메라 1</a>
+          <a href="#">카메라 2</a>
+          <a href="#">카메라 3</a>
+        </div>
+
+        <!-- 마이크 row -->
+        <div style="font-size: 32px; position: absolute; top: 37px; left: 0px">
+          🎤
+        </div>
+        <div id="mikeDropdownDiv" class="dropbtn" style="left: 50px; top: 8px">
+          마이크 메뉴
+        </div>
+        <div
+          id="mikeDropdown"
+          class="dropdown-content"
+          style="margin-top: 10px"
+        >
+          <a href="#">마이크 1</a>
+        </div>
+
+        <!-- 스피커 row -->
+        <div style="font-size: 32px; position: absolute; top: 80px; left: 0px">
+          🔊
+        </div>
+        <div
+          id="speakerDropdownDiv"
+          class="dropbtn"
+          style="left: 50px; top: 16px"
+        >
+          스피커 메뉴
+        </div>
+        <div
+          id="speakerDropdown"
+          class="dropdown-content"
+          style="margin-top: 20px"
+        >
+          <a href="#">스피커 1</a>
+        </div>
+      </div>
+
+      <div style="font-size: 24px; margin: 32px 0px">
+        🟦🟦🟦🟦🟦⬜⬜⬜⬜⬜⬜
+      </div>
+
+      <button style="position: absolute; right: 32px; top: 240px">
+        마이크 테스트
+      </button>
+
+      <form method="dialog">
+        <button id="deviceDialog-ok" style="width: 100%">확인</button>
+      </form>
+    </dialog>
 
     <!-- 이름 변경 Dialog  -->
     <dialog id="nameDialog" class="nameDialog">

@@ -125,6 +125,9 @@ const nameDialog = document.getElementById("nameDialog");
 const nameDialogInput = document.getElementById("nameDialog-input");
 const nameDialogOk = document.getElementById("nameDialog-ok");
 
+const deviceDialog = document.getElementById("deviceDialog");
+const deviceDialogOk = document.getElementById("deviceDialog-ok");
+
 const cameraButton = document.getElementById("camera-button");
 const mikeButton = document.getElementById("mike-button");
 const cameraStatus = document.getElementById("camera-status");
@@ -197,6 +200,12 @@ nameDialogOk.addEventListener("click", (event) => {
   GameScene.setName(getCurScene(), name);
 });
 
+deviceDialog.addEventListener("close", (event) => {
+  game.input.keyboard.enabled = true;
+});
+
+deviceDialogOk.addEventListener("click", (event) => {});
+
 cameraButton.addEventListener("click", (event) => {
   // 카메라 온오프, 상태 표시
   if (cameraStatus.style.display === "block") {
@@ -220,9 +229,44 @@ mikeButton.addEventListener("click", (event) => {
 });
 
 settingButton.addEventListener("click", (event) => {
-  // 설정 다이얼로그 처리
+  game.input.keyboard.enabled = false;
+  deviceDialog.show();
 });
 
 minimapButton.addEventListener("click", (event) => {
   GameScene.toggleMinimap(getCurScene());
 });
+
+// 장치 설정쪽
+const cameraDropdown = document.getElementById("cameraDropdown");
+const cameraDropdownDiv = document.getElementById("cameraDropdownDiv");
+const mikeDropdown = document.getElementById("mikeDropdown");
+const mikeDropdownDiv = document.getElementById("mikeDropdownDiv");
+const speakerDropdown = document.getElementById("speakerDropdown");
+const speakerDropdownDiv = document.getElementById("speakerDropdownDiv");
+
+cameraDropdownDiv.addEventListener("click", (event) => {
+  cameraDropdown.classList.toggle("show");
+});
+
+mikeDropdownDiv.addEventListener("click", (event) => {
+  mikeDropdown.classList.toggle("show");
+});
+
+speakerDropdownDiv.addEventListener("click", (event) => {
+  speakerDropdown.classList.toggle("show");
+});
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function (event) {
+  if (!event.target.matches(".dropbtn")) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains("show")) {
+        openDropdown.classList.remove("show");
+      }
+    }
+  }
+};
