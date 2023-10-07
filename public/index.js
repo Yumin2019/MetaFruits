@@ -1,6 +1,7 @@
 import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
+import json2array from "./util/util.js";
 
 function setMyPlayer(scene, player) {
   nameButton.innerText = player.name;
@@ -26,15 +27,6 @@ function setMyPlayer(scene, player) {
   }
 
   GameScene.setMyPlayer(scene, player);
-}
-
-function json2array(json) {
-  var result = [];
-  var keys = Object.keys(json);
-  keys.forEach(function (key) {
-    result.push(json[key]);
-  });
-  return result;
 }
 
 // Socket Code
@@ -68,13 +60,15 @@ socket.on("currentPlayers", (players) => {
 });
 
 socket.on("newPlayer", (player) => {
-  console.log(player);
   GameScene.addPlayer(getCurScene(), player);
 });
 
 socket.on("exitPlayer", (playerId) => {
-  console.log(playerId);
   GameScene.removePlayer(getCurScene(), playerId);
+});
+
+socket.on("playerMovement", (player) => {
+  GameScene.updatePlayer(getCurScene(), player);
 });
 
 const config = {
@@ -134,6 +128,7 @@ game.global = {
   character: "apple",
   name: "",
   playerId: "",
+  socket: socket,
 };
 
 const chattingInput = document.getElementById("chatting-input");

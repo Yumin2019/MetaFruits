@@ -2,33 +2,35 @@ import GameScene from "./scene/GameScene.js";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(data) {
-    let { scene, x, y, texture, frame, isMyInfo } = data;
+    let { scene, x, y, texture, frame, isMyInfo, playerId } = data;
     super(scene.matter.world, x, y, texture, frame);
     this.scene.add.existing(this);
 
-    if (isMyInfo) {
-      const { Body, Bodies } = Phaser.Physics.Matter.Matter;
-      var playerCollider = Bodies.circle(this.x, this.y, 12, {
-        isSenor: false,
-        label: "playerCollider",
-      });
-      var playerSensor = Bodies.circle(this.x, this.y, 12, {
-        isSensor: true,
-        label: "playerSensor",
-        onCollideCallback: (pair) => {},
-      });
+    const { Body, Bodies } = Phaser.Physics.Matter.Matter;
+    var playerCollider = Bodies.circle(this.x, this.y, 12, {
+      isSenor: false,
+      label: "playerCollider",
+    });
+    var playerSensor = Bodies.circle(this.x, this.y, 12, {
+      isSensor: true,
+      label: "playerSensor",
+      onCollideCallback: (pair) => {},
+    });
 
-      const compoundBody = Body.create({
-        parts: [playerCollider, playerSensor],
-        frictionAir: 0.35,
-      });
+    const compoundBody = Body.create({
+      parts: [playerCollider, playerSensor],
+      frictionAir: 0.35,
+    });
 
-      this.setExistingBody(compoundBody);
-    }
-
+    this.setExistingBody(compoundBody);
     this.setFixedRotation();
-    this.isMyInfo = isMyInfo;
     this.isKeyPressed = false;
+    this.isMyInfo = isMyInfo;
+    this.playerId = playerId;
+    this.oldPosition = {
+      x: 0,
+      y: 0,
+    };
   }
 
   static preload(scene) {
@@ -40,11 +42,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     scene.load.animation("fruits_anim", "assets/cute_fruits_anim.json");
   }
 
+  // this function is only called by my player
   update() {
-    if (!this.isMyInfo) {
-      return;
-    }
-
     // 미니맵 키
     if (this.inputKeys.minimap.isDown) {
       if (!this.isKeyPressed) {
@@ -82,5 +81,21 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     } else {
       this.anims.play(`${this.scene.game.global.character}_walk`, true);
     }
+
+    // 위치의 변화가 있었다면 서버에 데이터를 보낸다.
+    if (this.x !== this.oldPosition.x || this.y != this.oldPosition.y) {
+      let socket = this.scene.game.global.socket;
+      socket.emit("playerMovement", {
+        x: this.x,
+        y: this.y,
+        flipX: this.flipX,
+        curAnim: this.anims.getName(),
+      });
+    }
+
+    this.oldPosition = {
+      x: this.x,
+      y: this.y,
+    };
   }
 }

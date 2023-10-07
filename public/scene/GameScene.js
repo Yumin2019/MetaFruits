@@ -18,6 +18,7 @@ export default class GameScene extends Phaser.Scene {
   init(data) {
     this.spawnPosX = data.spawnPosX || 400;
     this.spawnPosY = data.spawnPosY || 300;
+    this.playerCollisionGroup = this.matter.world.nextGroup(true);
   }
 
   preload() {
@@ -287,6 +288,7 @@ export default class GameScene extends Phaser.Scene {
       frame: `${this.game.global.character}_idle_1`,
     });
 
+    this.player.setCollisionGroup(this.playerCollisionGroup);
     this.player.inputKeys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -326,13 +328,46 @@ export default class GameScene extends Phaser.Scene {
       texture: "cute_fruits",
       frame: `${info.character}_idle_1`,
     });
-    scene.otherPlayers[info.playerId] = otherPlayer;
+
+    let nameText = scene.add
+      .text(0, 0, info.name, {
+        font: "10px",
+        fill: "#000000",
+      })
+      .setDepth(100);
+
+    // disable collision using unique group id
+    otherPlayer.setCollisionGroup(scene.playerCollisionGroup);
+    scene.otherPlayers[info.playerId] = {
+      player: otherPlayer,
+      nameText: nameText,
+    };
   }
 
   static removePlayer(scene, playerId) {
-    scene.otherPlayers[playerId].destroy();
+    scene.otherPlayers[playerId].player.destroy();
+    scene.otherPlayers[playerId].nameText.destroy();
     delete scene.otherPlayers[playerId];
   }
+
+  static updatePlayer(scene, info) {
+    const { x, y, flipX, curAnim, playerId, name, character } = info;
+    console.log(scene.otherPlayers[playerId]);
+    let player = scene.otherPlayers[playerId].player;
+    let nameText = scene.otherPlayers[playerId].nameText;
+
+    player.x = x;
+    player.y = y;
+    player.flipX = flipX;
+    player.curAnim = curAnim;
+    player.setFlipX(flipX);
+    player.anims.play(curAnim, true);
+
+    // update name texta
+    nameText.x = player.x - nameText.width * 0.5;
+    nameText.y = player.y - player.height * 0.5 - nameText.height;
+  }
+
   /*
   players[socket.id] = {
     x: 300,
