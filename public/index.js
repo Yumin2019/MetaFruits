@@ -2,14 +2,9 @@ import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
 
-// Socket Code
-const socket = io();
-socket.on("currentPlayers", (players) => {
-  let player = players[socket.id];
-  GameScene.setPlayer(getCurScene(), player);
+function setMyPlayer(scene, player) {
   nameButton.innerText = player.name;
-
-  switch (game.global.character) {
+  switch (player.character) {
     case "apple":
       characterButton.innerHTML = "🍎";
       break;
@@ -29,6 +24,57 @@ socket.on("currentPlayers", (players) => {
       characterButton.innerHTML = "🍋";
       break;
   }
+
+  GameScene.setMyPlayer(scene, player);
+}
+
+function json2array(json) {
+  var result = [];
+  var keys = Object.keys(json);
+  keys.forEach(function (key) {
+    result.push(json[key]);
+  });
+  return result;
+}
+
+// Socket Code
+const socket = io();
+socket.on("currentPlayers", (players) => {
+  // 현재 플레이어의 정보를 추가한다.
+  // Scene이 초기화되지 않은 경우 콜백으로 처리한다. (create에서 처리)
+  let player = players[socket.id];
+  if (getCurScene()) {
+    setMyPlayer(getCurScene(), player);
+  } else {
+    GameScene.eventQueue.push(() => {
+      setMyPlayer(getInActiveScene(), player);
+    });
+  }
+
+  // 다른 플레이어의 정보를 추가한다.
+  delete players[socket.id];
+  console.log(players);
+
+  let playerArray = json2array(players);
+  playerArray.forEach((player) => {
+    if (getCurScene()) {
+      GameScene.addPlayer(getCurScene(), player);
+    } else {
+      GameScene.eventQueue.push(() => {
+        GameScene.addPlayer(getInActiveScene(), player);
+      });
+    }
+  });
+});
+
+socket.on("newPlayer", (player) => {
+  console.log(player);
+  GameScene.addPlayer(getCurScene(), player);
+});
+
+socket.on("exitPlayer", (playerId) => {
+  console.log(playerId);
+  GameScene.removePlayer(getCurScene(), playerId);
 });
 
 const config = {
@@ -66,6 +112,10 @@ const config = {
 
 function getCurScene() {
   return game.scene.getScenes()[0];
+}
+
+function getInActiveScene() {
+  return game.scene.getScenes(false)[0];
 }
 
 function addChatting(text) {

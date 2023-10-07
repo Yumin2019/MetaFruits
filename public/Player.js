@@ -2,28 +2,32 @@ import GameScene from "./scene/GameScene.js";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(data) {
-    let { scene, x, y, texture, frame } = data;
+    let { scene, x, y, texture, frame, isMyInfo } = data;
     super(scene.matter.world, x, y, texture, frame);
     this.scene.add.existing(this);
 
-    const { Body, Bodies } = Phaser.Physics.Matter.Matter;
-    var playerCollider = Bodies.circle(this.x, this.y, 12, {
-      isSenor: false,
-      label: "playerCollider",
-    });
-    var playerSensor = Bodies.circle(this.x, this.y, 12, {
-      isSensor: true,
-      label: "playerSensor",
-      onCollideCallback: (pair) => {},
-    });
+    if (isMyInfo) {
+      const { Body, Bodies } = Phaser.Physics.Matter.Matter;
+      var playerCollider = Bodies.circle(this.x, this.y, 12, {
+        isSenor: false,
+        label: "playerCollider",
+      });
+      var playerSensor = Bodies.circle(this.x, this.y, 12, {
+        isSensor: true,
+        label: "playerSensor",
+        onCollideCallback: (pair) => {},
+      });
 
-    const compoundBody = Body.create({
-      parts: [playerCollider, playerSensor],
-      frictionAir: 0.35,
-    });
+      const compoundBody = Body.create({
+        parts: [playerCollider, playerSensor],
+        frictionAir: 0.35,
+      });
 
-    this.setExistingBody(compoundBody);
+      this.setExistingBody(compoundBody);
+    }
+
     this.setFixedRotation();
+    this.isMyInfo = isMyInfo;
     this.isKeyPressed = false;
   }
 
@@ -37,6 +41,10 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
   }
 
   update() {
+    if (!this.isMyInfo) {
+      return;
+    }
+
     // 미니맵 키
     if (this.inputKeys.minimap.isDown) {
       if (!this.isKeyPressed) {

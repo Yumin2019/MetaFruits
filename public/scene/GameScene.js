@@ -9,7 +9,11 @@ export default class GameScene extends Phaser.Scene {
     });
     this.mapName = mapName;
     this.initialized = false;
+    this.otherPlayers = {};
   }
+
+  // function eventQueue after initialization of GameScene
+  static eventQueue = [];
 
   init(data) {
     this.spawnPosX = data.spawnPosX || 400;
@@ -93,7 +97,12 @@ export default class GameScene extends Phaser.Scene {
       .setActive(false);
   }
 
-  create() {}
+  create() {
+    GameScene.eventQueue.forEach((func) => {
+      func();
+    });
+    GameScene.eventQueue = [];
+  }
 
   updateTextInfo() {
     // update left top info text
@@ -270,6 +279,7 @@ export default class GameScene extends Phaser.Scene {
 
   createPlayer() {
     this.player = new Player({
+      isMyInfo: true,
       scene: this,
       x: this.spawnPosX,
       y: this.spawnPosY,
@@ -286,8 +296,9 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  // 서버와 통신하는 로직
-  static setPlayer(scene, info) {
+  // 서버 통신 로직
+  // 서버로 부터 받은 데이터를 토대로 내 정보를 갱신한다.
+  static setMyPlayer(scene, info) {
     const { x, y, playerId, name, character } = info;
 
     scene.createTileMap();
@@ -303,10 +314,24 @@ export default class GameScene extends Phaser.Scene {
     scene.game.global.character = character;
     scene.nameText.setText(name);
     scene.initialized = true;
+  }
 
-    console.log(info);
-    console.log(scene.player);
-    console.log(scene.game.global);
+  // 새로운 플레이어를 추가한다.
+  static addPlayer(scene, info) {
+    let otherPlayer = new Player({
+      isMyInfo: false,
+      scene: scene,
+      x: info.x,
+      y: info.y,
+      texture: "cute_fruits",
+      frame: `${info.character}_idle_1`,
+    });
+    scene.otherPlayers[info.playerId] = otherPlayer;
+  }
+
+  static removePlayer(scene, playerId) {
+    scene.otherPlayers[playerId].destroy();
+    delete scene.otherPlayers[playerId];
   }
   /*
   players[socket.id] = {
