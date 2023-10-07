@@ -1,8 +1,35 @@
-// const socket = io(`ws://localhost:3000`);
-
 import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
+
+// Socket Code
+const socket = io();
+socket.on("currentPlayers", (players) => {
+  let player = players[socket.id];
+  GameScene.setPlayer(getCurScene(), player);
+  nameButton.innerText = player.name;
+
+  switch (game.global.character) {
+    case "apple":
+      characterButton.innerHTML = "🍎";
+      break;
+    case "strawberry":
+      characterButton.innerHTML = "🍓";
+      break;
+    case "watermelon":
+      characterButton.innerHTML = "🍉";
+      break;
+    case "pear":
+      characterButton.innerHTML = "🍐";
+      break;
+    case "orange":
+      characterButton.innerHTML = "🍊";
+      break;
+    case "lemon":
+      characterButton.innerHTML = "🍋";
+      break;
+  }
+});
 
 const config = {
   type: Phaser.CANVAS,
@@ -37,15 +64,6 @@ const config = {
   },
 };
 
-function randomNameGenerator(num) {
-  let res = "";
-  for (let i = 0; i < num; i++) {
-    const random = Math.floor(Math.random() * 25); // 0 ~ 25
-    res += String.fromCharCode(97 + random); // a to z
-  }
-  return res;
-}
-
 function getCurScene() {
   return game.scene.getScenes()[0];
 }
@@ -64,7 +82,8 @@ game.global = {
   // global variables
   minimap: true,
   character: "apple",
-  name: randomNameGenerator(6),
+  name: "",
+  playerId: "",
 };
 
 const chattingInput = document.getElementById("chatting-input");

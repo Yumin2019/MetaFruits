@@ -8,6 +8,7 @@ export default class GameScene extends Phaser.Scene {
       key: sceneName,
     });
     this.mapName = mapName;
+    this.initialized = false;
   }
 
   init(data) {
@@ -92,13 +93,7 @@ export default class GameScene extends Phaser.Scene {
       .setActive(false);
   }
 
-  create() {
-    this.createTileMap();
-    this.createPlayer();
-    this.createText();
-    this.createMessageContainer();
-    this.createCamera();
-  }
+  create() {}
 
   updateTextInfo() {
     // update left top info text
@@ -125,9 +120,11 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update() {
-    this.player.update();
-    this.updateTextInfo();
-    this.updateMessageContainer();
+    if (this.initialized) {
+      this.player.update();
+      this.updateTextInfo();
+      this.updateMessageContainer();
+    }
   }
 
   createText() {
@@ -205,7 +202,10 @@ export default class GameScene extends Phaser.Scene {
 
     let portal = this.matter.add.rectangle(x, y, width, height);
     portal.onCollideCallback = (pair) => {
-      if (pair.bodyA.label === "playerSensor") {
+      if (
+        pair.bodyA.label === "playerSensor" ||
+        pair.bodyB.label === "playerSensor"
+      ) {
         this.scene.start(destScene, data);
       }
     };
@@ -285,4 +285,37 @@ export default class GameScene extends Phaser.Scene {
       minimap: Phaser.Input.Keyboard.KeyCodes.M,
     });
   }
+
+  // 서버와 통신하는 로직
+  static setPlayer(scene, info) {
+    const { x, y, playerId, name, character } = info;
+
+    scene.createTileMap();
+    scene.createPlayer();
+    scene.createText();
+    scene.createMessageContainer();
+    scene.createCamera();
+
+    scene.player.x = x;
+    scene.player.y = y;
+    scene.game.global.playerId = playerId;
+    scene.game.global.name = name;
+    scene.game.global.character = character;
+    scene.nameText.setText(name);
+    scene.initialized = true;
+
+    console.log(info);
+    console.log(scene.player);
+    console.log(scene.game.global);
+  }
+  /*
+  players[socket.id] = {
+    x: 300,
+    y: 400,
+    playerId: socket.id,
+    // isMainScene: true,
+    name: randomNameGenerator(6),
+    character: characters.at(Math.floor(Math.random() * 5)),
+  };
+  */
 }
