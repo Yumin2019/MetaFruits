@@ -57,7 +57,27 @@ io.on("connection", (socket) => {
     players[socket.id].y = y;
     players[socket.id].flipX = flipX;
     players[socket.id].curAnim = curAnim;
-    socket.broadcast.emit("playerMovement", players[socket.id]); // Scene 개념을 적용하여 수정해야 한다.
+    socket.broadcast.emit("updatePlayer", players[socket.id]); // Scene 개념을 적용하여 수정해야 한다.
+  });
+
+  socket.on("chatting", (data) => {
+    socket.broadcast.emit("chatting", data);
+  });
+
+  socket.on("character", (data) => {
+    let curAnim = players[socket.id].curAnim;
+    players[socket.id].curAnim = `${data.character}${curAnim.substring(
+      curAnim.length - 5
+    )}`;
+    players[socket.id].character = data.character;
+    socket.broadcast.emit("updatePlayer", players[socket.id]);
+    socket.broadcast.emit("character", data);
+  });
+
+  socket.on("name", (data) => {
+    players[socket.id].name = data.name;
+    socket.broadcast.emit("updatePlayer", players[socket.id]);
+    socket.broadcast.emit("name", data);
   });
 
   socket.on("disconnect", () => {

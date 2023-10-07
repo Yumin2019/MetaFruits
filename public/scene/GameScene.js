@@ -1,4 +1,5 @@
 import Player from "../Player.js";
+import { json2array, divideMessage } from "./../util/util.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor(data) {
@@ -36,36 +37,52 @@ export default class GameScene extends Phaser.Scene {
     scene.nameText.setText(name);
   }
 
-  static setMessage(scene, message) {
-    // 받은 메시지를 토대로 메시지를 표출한다.
-    // 메시지가 너무 긴 경우 잘라서 처리한다.
-    let text = "";
-    if (message.length <= 25) {
-      text = message;
+  static setMessage(scene, playerId, message) {
+    // refactor: 현재 플레이어 정보와 타 플레이어의 정보를 분리하여 처리하고 있는데
+    // 굳이 그럴 필요가 없을 것으로 보인다. 공통으로 처리할 수 있는 부분으로 정리하는 게 좋을 듯.
+    const isMyInfo = playerId === scene.game.global.socket.id;
+    const playerJson = isMyInfo ? undefined : scene.otherPlayers[playerId];
+
+    const text = divideMessage(message);
+    const messageRect = isMyInfo ? scene.messageRect : playerJson.messageRect;
+    const messageText = isMyInfo ? scene.messageText : playerJson.messageText;
+    const container = isMyInfo ? scene.container : playerJson.container;
+    const messageSize = isMyInfo ? scene.messageSize : playerJson.messageSize;
+
+    messageRect.clear();
+    messageText.setText(text);
+    container.setActive(true).setVisible(true);
+
+    // fix: 명시적으로 지정하지 않으면 오류 발생
+    if (isMyInfo) {
+      if (scene.tweenAnim) scene.tweenAnim.destroy();
     } else {
-      let count = parseInt(message.length / 25) + 1;
-      for (let i = 0; i < count; i++) {
-        text += message.substring(i * 25, (i + 1) * 25);
-        if (i != count - 1) text += "\n";
-      }
+      if (playerJson.tweenAnim) playerJson.tweenAnim.destroy();
     }
 
-    scene.messageRect.clear();
-    scene.messageText.setText(text);
-    scene.container.setActive(true).setVisible(true);
-    if (scene.tweenAnim) scene.tweenAnim.destroy();
-
-    scene.messageWidth = scene.messageText.width + scene.messagePadding * 2;
-    scene.messageHeight = scene.messageText.height + scene.messagePadding * 2;
-    scene.messageRect
+    messageSize.messageWidth = messageText.width + scene.messagePadding * 2;
+    messageSize.messageHeight = messageText.height + scene.messagePadding * 2;
+    messageRect
       .lineStyle(2, 0x000000, 1)
       .fillStyle(0xffffff, 1.0)
-      .fillRoundedRect(0, 0, scene.messageWidth, scene.messageHeight, 5)
-      .strokeRoundedRect(0, 0, scene.messageWidth, scene.messageHeight, 5);
+      .fillRoundedRect(
+        0,
+        0,
+        messageSize.messageWidth,
+        messageSize.messageHeight,
+        5
+      )
+      .strokeRoundedRect(
+        0,
+        0,
+        messageSize.messageWidth,
+        messageSize.messageHeight,
+        5
+      );
 
     // Tween 애니메이션은 재활용이 안 된다.
-    scene.tweenAnim = scene.tweens.add({
-      targets: [scene.container],
+    let tweenAnim = scene.tweens.add({
+      targets: [container],
       ease: "Sine.easeInOut",
       duration: 4000,
       alpha: {
@@ -73,16 +90,26 @@ export default class GameScene extends Phaser.Scene {
         getEnd: () => 0.0,
       },
       onComplete: () => {
-        scene.container.setActive(false).setVisible(false);
+        container.setActive(false).setVisible(false);
       },
     });
+
+    // fix: 명시적으로 지정하지 않으면 오류 발생
+    if (isMyInfo) {
+      scene.tweenAnim = tweenAnim;
+    } else {
+      playerJson.tweenAnim = tweenAnim;
+    }
   }
 
   createMessageContainer() {
     // 메시지 컨테이너를 생성한다. 세부 설정은 하지 않음
-    this.messageWidth = 0;
-    this.messageHeight = 0;
+    this.messageSize = {
+      messageWidth: 0,
+      messageHeight: 0,
+    };
     this.messagePadding = 2;
+    this.tweenAnim = undefined;
 
     // positions are relative to the container
     this.messageRect = this.add.graphics();
@@ -123,10 +150,26 @@ export default class GameScene extends Phaser.Scene {
     // player's offset is 0.5
     // x는 중간에 오도록 처리하고 y는 플레이어 상단 기준에서 메시지 크기 만큼 올린다. (12 is yOffset)
     if (this.container.visible) {
-      this.container.x = this.player.x - this.messageWidth * 0.5;
+      this.container.x = this.player.x - this.messageSize.messageWidth * 0.5;
       this.container.y =
-        this.player.y - this.player.height * 0.5 - this.messageHeight - 12;
+        this.player.y -
+        this.player.height * 0.5 -
+        this.messageSize.messageHeight -
+        12;
     }
+
+    let otherPlayers = json2array(this.otherPlayers);
+    otherPlayers.forEach((playerJson) => {
+      if (playerJson.container.visible) {
+        playerJson.container.x =
+          playerJson.player.x - playerJson.messageSize.messageWidth * 0.5;
+        playerJson.container.y =
+          playerJson.player.y -
+          playerJson.player.height * 0.5 -
+          playerJson.messageSize.messageHeight -
+          12;
+      }
+    });
   }
 
   update() {
@@ -329,6 +372,7 @@ export default class GameScene extends Phaser.Scene {
       frame: `${info.character}_idle_1`,
     });
 
+    // 새로운 플레이어의 이름, 메시지 Container
     let nameText = scene.add
       .text(0, 0, info.name, {
         font: "10px",
@@ -336,22 +380,49 @@ export default class GameScene extends Phaser.Scene {
       })
       .setDepth(100);
 
+    nameText.x = info.x - nameText.width * 0.5;
+    nameText.y = info.y - otherPlayer.height * 0.5 - nameText.height;
+
+    let messageRect = scene.add.graphics();
+    let messageText = scene.add
+      .text(scene.messagePadding, scene.messagePadding, "")
+      .setFont("10px")
+      .setColor("#000000");
+
+    let container = scene.add
+      .container(0, 0, [messageRect, messageText])
+      .setDepth(100)
+      .setVisible(false)
+      .setActive(false);
+
     // disable collision using unique group id
     otherPlayer.setCollisionGroup(scene.playerCollisionGroup);
     scene.otherPlayers[info.playerId] = {
       player: otherPlayer,
       nameText: nameText,
+      messageRect,
+      messageText,
+      container,
+      messageSize: {
+        messageWidth: 0,
+        messageHeight: 0,
+      },
     };
   }
 
   static removePlayer(scene, playerId) {
-    scene.otherPlayers[playerId].player.destroy();
-    scene.otherPlayers[playerId].nameText.destroy();
+    let playerJson = scene.otherPlayers[playerId];
+    playerJson.player.destroy();
+    playerJson.nameText.destroy();
+    playerJson.messageRect.destroy();
+    playerJson.messageText.destroy();
+    playerJson.container.destroy();
+
     delete scene.otherPlayers[playerId];
   }
 
   static updatePlayer(scene, info) {
-    const { x, y, flipX, curAnim, playerId, name, character } = info;
+    const { x, y, flipX, curAnim, playerId, name } = info;
     console.log(scene.otherPlayers[playerId]);
     let player = scene.otherPlayers[playerId].player;
     let nameText = scene.otherPlayers[playerId].nameText;
@@ -362,6 +433,7 @@ export default class GameScene extends Phaser.Scene {
     player.curAnim = curAnim;
     player.setFlipX(flipX);
     player.anims.play(curAnim, true);
+    nameText.setText(name);
 
     // update name texta
     nameText.x = player.x - nameText.width * 0.5;

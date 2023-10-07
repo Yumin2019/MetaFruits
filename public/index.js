@@ -1,7 +1,7 @@
 import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
-import json2array from "./util/util.js";
+import { json2array } from "./../util/util.js";
 
 function setMyPlayer(scene, player) {
   nameButton.innerText = player.name;
@@ -67,8 +67,27 @@ socket.on("exitPlayer", (playerId) => {
   GameScene.removePlayer(getCurScene(), playerId);
 });
 
-socket.on("playerMovement", (player) => {
+socket.on("updatePlayer", (player) => {
   GameScene.updatePlayer(getCurScene(), player);
+});
+
+socket.on("chatting", (data) => {
+  const { playerId, message, name } = data;
+  GameScene.setMessage(getCurScene(), playerId, message);
+  addChatting(`${name}: ${message}`);
+});
+
+// 채팅 메시지 추가와 토스트 메시지를 처리한다.
+socket.on("character", (data) => {
+  const { playerId, chattingMessage, containerMessage } = data;
+  addChatting(chattingMessage);
+  GameScene.setMessage(getCurScene(), playerId, containerMessage);
+});
+
+socket.on("name", (data) => {
+  const { playerId, chattingMessage, containerMessage } = data;
+  addChatting(chattingMessage);
+  GameScene.setMessage(getCurScene(), playerId, containerMessage);
 });
 
 const config = {
@@ -172,9 +191,14 @@ chattingClose.addEventListener("click", (event) => {
 chattingInput.addEventListener("keyup", (event) => {
   if (event.key === "Enter" && chattingInput.value.length > 0) {
     // 플레이어 상단에 메시지를 표출한다.
-    GameScene.setMessage(getCurScene(), chattingInput.value);
+    GameScene.setMessage(getCurScene(), socket.id, chattingInput.value);
 
     // 채팅창에 추가한다.
+    socket.emit("chatting", {
+      playerId: socket.id,
+      message: chattingInput.value,
+      name: game.global.name,
+    });
     addChatting(`${game.global.name}: ${chattingInput.value}`);
     chattingInput.value = "";
   }
@@ -229,13 +253,19 @@ characterButton.addEventListener("click", (event) => {
       break;
   }
 
-  GameScene.setMessage(
-    getCurScene(),
-    `Changed character to ${characterButton.innerHTML}`
-  );
-  addChatting(
-    `${game.global.name} changed character to ${characterButton.innerHTML}`
-  );
+  let containerMessage = `Changed character to ${characterButton.innerHTML}`;
+  GameScene.setMessage(getCurScene(), socket.id, containerMessage);
+
+  let chattingMessage = `${game.global.name} changed character to ${characterButton.innerHTML}`;
+  addChatting(chattingMessage);
+
+  // 캐릭터 변경 이벤트(받는 쪽에선 그대로 처리)
+  socket.emit("character", {
+    playerId: socket.id,
+    chattingMessage,
+    containerMessage,
+    character: game.global.character,
+  });
 });
 
 nameButton.innerText = game.global.name;
@@ -256,13 +286,23 @@ nameDialogOk.addEventListener("click", (event) => {
     return;
   }
 
-  GameScene.setMessage(getCurScene(), `Changed name to ${name}`);
-  addChatting(`${game.global.name} changed name to ${name}`);
+  let chattingMessage = `${game.global.name} changed name to ${name}`;
+  let containerMessage = `Changed name to ${name}`;
+  GameScene.setMessage(getCurScene(), socket.id, containerMessage);
+  addChatting(chattingMessage);
 
   // 글로벌변수, 하단이름, 캐릭터 이름을 갱신한다.
   game.global.name = name;
   nameButton.innerText = name;
   GameScene.setName(getCurScene(), name);
+
+  // 이름 변경 이벤트(받는 쪽에선 그대로 처리)
+  socket.emit("name", {
+    playerId: socket.id,
+    chattingMessage,
+    containerMessage,
+    name,
+  });
 });
 
 deviceDialog.addEventListener("close", (event) => {
