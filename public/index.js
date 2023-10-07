@@ -99,6 +99,7 @@ chattingOpen.addEventListener("click", (event) => {
   chattingContainer.style.display = "block";
 });
 
+chattingContainer.style.display = "none";
 chattingClose.addEventListener("click", (event) => {
   chattingContainer.style.display = "none";
 });
@@ -175,9 +176,9 @@ characterButton.addEventListener("click", (event) => {
 
 nameButton.innerText = game.global.name;
 nameButton.addEventListener("click", (event) => {
-  nameDialog.show();
-  game.input.keyboard.enabled = false;
-  nameDialogInput.value = game.global.name;
+  nameDialog.open ? nameDialog.close() : nameDialog.show();
+  game.input.keyboard.enabled = !nameDialog.open;
+  if (nameDialog.open) nameDialogInput.value = game.global.name;
 });
 
 nameDialog.addEventListener("close", (event) => {
@@ -229,8 +230,8 @@ mikeButton.addEventListener("click", (event) => {
 });
 
 settingButton.addEventListener("click", (event) => {
-  game.input.keyboard.enabled = false;
-  deviceDialog.show();
+  deviceDialog.open ? deviceDialog.close() : deviceDialog.show();
+  game.input.keyboard.enabled = !deviceDialog.open;
 });
 
 minimapButton.addEventListener("click", (event) => {
