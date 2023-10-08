@@ -1,12 +1,3 @@
-export function json2array(json) {
-  var result = [];
-  var keys = Object.keys(json);
-  keys.forEach(function (key) {
-    result.push(json[key]);
-  });
-  return result;
-}
-
 // 받은 메시지를 토대로 메시지를 표출한다.
 // 메시지가 너무 긴 경우 잘라서 처리한다.
 export function divideMessage(message) {

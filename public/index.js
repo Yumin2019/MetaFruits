@@ -1,7 +1,6 @@
 import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
-import { json2array } from "./../util/util.js";
 
 function setMyPlayer(scene, player) {
   nameButton.innerText = player.name;
@@ -32,8 +31,9 @@ function setMyPlayer(scene, player) {
 // Socket Code
 const socket = io();
 socket.on("currentPlayers", (players) => {
-  // 현재 플레이어의 정보를 추가한다.
-  // Scene이 초기화되지 않은 경우 콜백으로 처리한다. (create에서 처리)
+  // currentScene
+  // 플레이어 정보 추가
+  // GameScene.eventQueue: Scene이 초기화되지 않은 경우 콜백을 등록하여 처리
   let player = players[socket.id];
   if (getCurScene()) {
     setMyPlayer(getCurScene(), player);
@@ -47,7 +47,7 @@ socket.on("currentPlayers", (players) => {
   delete players[socket.id];
   console.log(players);
 
-  let playerArray = json2array(players);
+  let playerArray = Object.values(players);
   playerArray.forEach((player) => {
     if (getCurScene()) {
       GameScene.addPlayer(getCurScene(), player);
@@ -77,16 +77,9 @@ socket.on("chatting", (data) => {
   addChatting(`${name}: ${message}`);
 });
 
-// 채팅 메시지 추가와 토스트 메시지를 처리한다.
-socket.on("character", (data) => {
-  const { playerId, chattingMessage, containerMessage } = data;
-  addChatting(chattingMessage);
-  GameScene.setMessage(getCurScene(), playerId, containerMessage);
-});
-
-socket.on("name", (data) => {
-  const { playerId, chattingMessage, containerMessage } = data;
-  addChatting(chattingMessage);
+// 토스트 메시지를 처리한다. (CurrentScene)
+socket.on("toast", (data) => {
+  const { playerId, containerMessage } = data;
   GameScene.setMessage(getCurScene(), playerId, containerMessage);
 });
 
@@ -180,11 +173,13 @@ chattingForm.addEventListener("submit", (event) => {
 // 채팅 On/Off
 chattingOpen.addEventListener("click", (event) => {
   chattingContainer.style.display = "block";
+  chattingOpen.style.display = "none";
 });
 
 chattingContainer.style.display = "none";
 chattingClose.addEventListener("click", (event) => {
   chattingContainer.style.display = "none";
+  chattingOpen.style.display = "block";
 });
 
 // 채팅 엔터키
@@ -256,13 +251,9 @@ characterButton.addEventListener("click", (event) => {
   let containerMessage = `Changed character to ${characterButton.innerHTML}`;
   GameScene.setMessage(getCurScene(), socket.id, containerMessage);
 
-  let chattingMessage = `${game.global.name} changed character to ${characterButton.innerHTML}`;
-  addChatting(chattingMessage);
-
   // 캐릭터 변경 이벤트(받는 쪽에선 그대로 처리)
   socket.emit("character", {
     playerId: socket.id,
-    chattingMessage,
     containerMessage,
     character: game.global.character,
   });
@@ -286,10 +277,8 @@ nameDialogOk.addEventListener("click", (event) => {
     return;
   }
 
-  let chattingMessage = `${game.global.name} changed name to ${name}`;
   let containerMessage = `Changed name to ${name}`;
   GameScene.setMessage(getCurScene(), socket.id, containerMessage);
-  addChatting(chattingMessage);
 
   // 글로벌변수, 하단이름, 캐릭터 이름을 갱신한다.
   game.global.name = name;
@@ -299,7 +288,6 @@ nameDialogOk.addEventListener("click", (event) => {
   // 이름 변경 이벤트(받는 쪽에선 그대로 처리)
   socket.emit("name", {
     playerId: socket.id,
-    chattingMessage,
     containerMessage,
     name,
   });

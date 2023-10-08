@@ -1,5 +1,5 @@
 import Player from "../Player.js";
-import { json2array, divideMessage } from "./../util/util.js";
+import { divideMessage } from "./../util/util.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor(data) {
@@ -158,7 +158,7 @@ export default class GameScene extends Phaser.Scene {
         12;
     }
 
-    let otherPlayers = json2array(this.otherPlayers);
+    let otherPlayers = Object.values(this.otherPlayers);
     otherPlayers.forEach((playerJson) => {
       if (playerJson.container.visible) {
         playerJson.container.x =
@@ -249,7 +249,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createPortal(portalData) {
-    // {portalName: "", destScene: "", x, y, width, height, data(json) }
+    /*
+     portalName: "portal1",
+      destScene: "MainScene",
+      x: 220,
+      y: 1010,
+      width: 90,
+      height: 12,
+      data: { spawnPosX: 400, spawnPosY: 230 },
+    });
+  */
     const { portalName, destScene, x, y, width, height } = portalData;
     const data = portalData.data || {};
 
@@ -259,7 +268,8 @@ export default class GameScene extends Phaser.Scene {
         pair.bodyA.label === "playerSensor" ||
         pair.bodyB.label === "playerSensor"
       ) {
-        this.scene.start(destScene, data);
+        // this.scene.start(destScene, data);
+        this.game.global.socket.on("portal", portalData);
       }
     };
 
