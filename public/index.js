@@ -32,6 +32,9 @@ function setMyPlayer(scene, player) {
 const socket = io();
 socket.on("currentPlayers", (data) => {
   const { sceneName, players } = data;
+  // console.log("currentPlayers");
+  // console.log(`${sceneName}, count = ${Object.keys(players).length}`);
+
   // 플레이어 정보 추가
   // GameScene.eventQueue: Scene이 초기화되지 않은 경우 콜백을 등록하여 처리
   let player = players[socket.id];
@@ -88,10 +91,6 @@ socket.on("updatePlayer", (player) => {
       GameScene.updatePlayer(getInActiveScene(player.sceneName), player);
     });
   }
-});
-
-socket.on("newScene", (destScene) => {
-  GameScene.newScene(getCurScene(), destScene);
 });
 
 socket.on("chatting", (data) => {

@@ -118,7 +118,6 @@ io.on("connection", (socket) => {
       .emit("exitPlayer", { sceneName: prevScene, playerId: socket.id });
 
     socket.join(destScene);
-    socket.emit("newScene", destScene); // scene.start on client side
     socket.emit("currentPlayers", {
       players: getPlayers(destScene),
       sceneName: destScene,

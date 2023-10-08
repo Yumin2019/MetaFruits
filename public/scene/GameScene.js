@@ -16,12 +16,6 @@ export default class GameScene extends Phaser.Scene {
   // function eventQueue after initialization of GameScene
   static eventQueue = [];
 
-  init(data) {
-    this.spawnPosX = data.spawnPosX || 400;
-    this.spawnPosY = data.spawnPosY || 300;
-    this.playerCollisionGroup = this.matter.world.nextGroup(true);
-  }
-
   preload() {
     Player.preload(this);
 
@@ -126,6 +120,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.playerCollisionGroup = this.matter.world.nextGroup(true);
     GameScene.eventQueue.forEach((func) => {
       func();
     });
@@ -251,7 +246,6 @@ export default class GameScene extends Phaser.Scene {
 
   createPortal(portalData) {
     const { portalName, destScene, x, y, width, height } = portalData;
-    const data = portalData.data || {};
 
     let portal = this.matter.add.rectangle(x, y, width, height);
     portal.onCollideCallback = (pair) => {
@@ -259,7 +253,11 @@ export default class GameScene extends Phaser.Scene {
         pair.bodyA.label === "playerSensor" ||
         pair.bodyB.label === "playerSensor"
       ) {
-        this.game.global.socket.emit("portal", portalData);
+        GameScene.newScene(this, destScene);
+        // fix: 장면 전환후 회색화면이 표츌되는 이슈 수정
+        setTimeout(() => {
+          this.game.global.socket.emit("portal", portalData);
+        }, 100);
       }
     };
 
@@ -325,8 +323,8 @@ export default class GameScene extends Phaser.Scene {
     this.player = new Player({
       isMyInfo: true,
       scene: this,
-      x: this.spawnPosX,
-      y: this.spawnPosY,
+      x: 300,
+      y: 400,
       texture: "cute_fruits",
       frame: `${this.game.global.character}_idle_1`,
     });
@@ -354,9 +352,11 @@ export default class GameScene extends Phaser.Scene {
 
     scene.player.x = x;
     scene.player.y = y;
+
     scene.game.global.playerId = playerId;
     scene.game.global.name = name;
     scene.game.global.character = character;
+
     scene.nameText.setText(name);
     scene.initialized = true;
   }
