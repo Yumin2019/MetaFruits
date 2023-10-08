@@ -8,6 +8,8 @@ export default class GameScene extends Phaser.Scene {
     super({
       key: sceneName,
     });
+
+    this.sceneName = sceneName;
     this.mapName = mapName;
     this.initialized = false;
     this.otherPlayers = {};
@@ -37,6 +39,10 @@ export default class GameScene extends Phaser.Scene {
     const isMyInfo = playerId === scene.game.global.socket.id;
     const playerJson = isMyInfo ? undefined : scene.otherPlayers[playerId];
 
+    // 다른 Scene에 존재하는 플레이어의 경우 제외한다.
+    if (!isMyInfo && !playerJson) return;
+
+    console.log(`message = ${message}`);
     const text = divideMessage(message);
     const messageRect = isMyInfo ? scene.messageRect : playerJson.messageRect;
     const messageText = isMyInfo ? scene.messageText : playerJson.messageText;

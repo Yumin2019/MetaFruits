@@ -30,9 +30,8 @@ function setMyPlayer(scene, player) {
 
 // Socket Code
 const socket = io();
-socket.on("currentPlayers", (data) => {
-  const { sceneName, players } = data;
-  // console.log("currentPlayers");
+socket.on("sceneInfo", (data) => {
+  const { sceneName, players, allChattingList, roomChattingList } = data;
   // console.log(`${sceneName}, count = ${Object.keys(players).length}`);
 
   // 플레이어 정보 추가
@@ -59,6 +58,22 @@ socket.on("currentPlayers", (data) => {
       });
     }
   });
+
+  // 채팅 채널 설정(기본적으로 입장시 설정한다.)
+  if (sceneName === "MainScene") {
+    game.global.chattingChannel = "all";
+    chattingChannel.innerText = "전체";
+    setChattingList(allChattingList);
+  } else {
+    game.global.chattingChannel = "room";
+    chattingChannel.innerText = "회의";
+    setChattingList(roomChattingList);
+  }
+
+  // 입장시 채팅 동기화
+  // 회의 내부에서는 모든 이벤트를 받지만, 외부에서는 회의실 채팅을 처리하지 않기에 동기화가 필요하다
+  game.global.allChattingList = allChattingList;
+  game.global.roomChattingList = roomChattingList;
 });
 
 socket.on("newPlayer", (data) => {
@@ -94,8 +109,19 @@ socket.on("updatePlayer", (player) => {
 });
 
 socket.on("chatting", (data) => {
-  const { playerId, message, name, sceneName } = data;
-  addChatting(`${name}: ${message}`);
+  const { playerId, message, name, sceneName, chattingChannel } = data;
+
+  // 채팅 채널 처리에 따라 채팅을 추가한다.
+  let msg = `${name}: ${message}`;
+  if (game.global.chattingChannel === chattingChannel) {
+    addChatting(msg);
+  }
+
+  if (chattingChannel === "all") {
+    game.global.allChattingList.push(msg);
+  } else {
+    game.global.roomChattingList.push(msg);
+  }
 
   if (getCurScene()) {
     GameScene.setMessage(getCurScene(), playerId, message);
@@ -173,6 +199,17 @@ function addChatting(text) {
   chattingList.scrollTop = chattingList.scrollHeight;
 }
 
+function setChattingList(chatList) {
+  chattingList.innerHTML = "";
+  chatList.forEach((chatting) => {
+    let newDiv = document.createElement("div");
+    newDiv.innerHTML = chatting;
+    newDiv.className = "msger-text";
+    chattingList.appendChild(newDiv);
+  });
+  chattingList.scrollTop = chattingList.scrollHeight;
+}
+
 const game = new Phaser.Game(config);
 
 game.global = {
@@ -181,15 +218,18 @@ game.global = {
   character: "apple",
   name: "",
   playerId: "",
+  chattingChannel: "all", // all, room
+  allChattingList: [],
+  roomChattingList: [],
   socket: socket,
 };
 
 const chattingInput = document.getElementById("chatting-input");
 const chattingList = document.getElementById("chatting-list");
-const chattingForm = document.getElementById("chatting-form");
 const chattingOpen = document.getElementById("chatting-open");
 const chattingClose = document.getElementById("chatting-close");
 const chattingContainer = document.getElementById("chatting-container");
+const chattingChannel = document.getElementById("chatting-channel");
 
 // 채팅 입력창 Focusing 처리
 chattingInput.addEventListener("focusin", (event) => {
@@ -204,11 +244,6 @@ chattingInput.addEventListener("focusout", (event) => {
 game.canvas.addEventListener("mousedown", (event) => {
   game.input.keyboard.enabled = true;
   chattingInput.blur();
-});
-
-// ignore submit
-chattingForm.addEventListener("submit", (event) => {
-  event.preventDefault();
 });
 
 // 채팅 On/Off
@@ -228,15 +263,40 @@ chattingInput.addEventListener("keyup", (event) => {
   if (event.key === "Enter" && chattingInput.value.length > 0) {
     // 플레이어 상단에 메시지를 표출한다.
     GameScene.setMessage(getCurScene(), socket.id, chattingInput.value);
-
     // 채팅창에 추가한다.
     socket.emit("chatting", {
       playerId: socket.id,
       message: chattingInput.value,
       name: game.global.name,
+      chattingChannel: game.global.chattingChannel,
     });
-    addChatting(`${game.global.name}: ${chattingInput.value}`);
+
+    let message = `${game.global.name}: ${chattingInput.value}`;
+    addChatting(message);
     chattingInput.value = "";
+
+    // 글로벌 chatting list 갱신
+    if (game.global.chattingChannel === "all") {
+      game.global.allChattingList.push(message);
+    } else {
+      game.global.roomChattingList.push(message);
+    }
+  }
+});
+
+chattingChannel.addEventListener("click", (event) => {
+  event.preventDefault();
+  let sceneName = getCurScene().sceneName;
+  if (sceneName === "MainScene") return;
+
+  if (game.global.chattingChannel === "all") {
+    game.global.chattingChannel = "room";
+    chattingChannel.innerText = "회의";
+    setChattingList(game.global.roomChattingList);
+  } else {
+    game.global.chattingChannel = "all";
+    chattingChannel.innerText = "전체";
+    setChattingList(game.global.allChattingList);
   }
 });
 

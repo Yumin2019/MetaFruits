@@ -7,6 +7,8 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 
 const players = {};
+const allChattingList = [];
+const roomChattingList = [];
 const characters = [
   "apple",
   "strawberry",
@@ -58,9 +60,11 @@ io.on("connection", (socket) => {
 
   // 새로운 유저에게 MainScene 유저 리스트를 전달한다.
   socket.join("MainScene");
-  socket.emit("currentPlayers", {
+  socket.emit("sceneInfo", {
     players: getPlayers("MainScene"),
     sceneName: "MainScene",
+    allChattingList,
+    roomChattingList,
   });
 
   // MainScene에 있는 다른 유저에게 새 유저 정보를 전달
@@ -79,9 +83,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chatting", (data) => {
-    // 전체 채팅인지 구분해야 한다. (나중에 추가) 단순히 채팅만 처리하면 되는지, 오브젝트도 처리해야 되는지 결정이 된다.
-    data["sceneName"] = "MainScene";
-    socket.broadcast.emit("chatting", data);
+    let sceneName = players[socket.id].sceneName;
+    let message = `${data.name}: ${data.message}`;
+    data["sceneName"] = sceneName;
+
+    if (data.chattingChannel === "all") {
+      allChattingList.push(message);
+      socket.broadcast.emit("chatting", data);
+    } else {
+      // 회의실에서만 호출된다.
+      roomChattingList.push(message);
+      socket.to(sceneName).emit("chatting", data);
+    }
   });
 
   socket.on("character", (data) => {
@@ -118,9 +131,11 @@ io.on("connection", (socket) => {
       .emit("exitPlayer", { sceneName: prevScene, playerId: socket.id });
 
     socket.join(destScene);
-    socket.emit("currentPlayers", {
-      players: getPlayers(destScene),
+    socket.emit("sceneInfo", {
       sceneName: destScene,
+      players: getPlayers(destScene),
+      allChattingList,
+      roomChattingList,
     });
     socket.to(destScene).emit("newPlayer", { sceneName: destScene, player });
   });
