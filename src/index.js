@@ -56,66 +56,80 @@ io.on("connection", (socket) => {
     character: character,
   };
 
-  // 기본적으로 MainScene에 입장한다.
+  // 새로운 유저에게 MainScene 유저 리스트를 전달한다.
   socket.join("MainScene");
-
-  // 새로운 유저에게 MainScene 유저 리스트 전달
-  socket.emit("currentPlayers", getPlayers("MainScene"));
+  socket.emit("currentPlayers", {
+    players: getPlayers("MainScene"),
+    sceneName: "MainScene",
+  });
 
   // MainScene에 있는 다른 유저에게 새 유저 정보를 전달
-  socket.to("MainScene").emit("newPlayer", players[socket.id]);
+  socket
+    .to("MainScene")
+    .emit("newPlayer", { sceneName: "MainScene", player: players[socket.id] });
 
   socket.on("playerMovement", (data) => {
     const { x, y, flipX, curAnim } = data;
-    let sceneName = players[socket.id].sceneName;
-    players[socket.id].x = x;
-    players[socket.id].y = y;
-    players[socket.id].flipX = flipX;
-    players[socket.id].curAnim = curAnim;
-    socket.to(sceneName).emit("updatePlayer", players[socket.id]);
+    let player = players[socket.id];
+    player.x = x;
+    player.y = y;
+    player.flipX = flipX;
+    player.curAnim = curAnim;
+    socket.to(player.sceneName).emit("updatePlayer", player);
   });
 
   socket.on("chatting", (data) => {
     // 전체 채팅인지 구분해야 한다. (나중에 추가) 단순히 채팅만 처리하면 되는지, 오브젝트도 처리해야 되는지 결정이 된다.
+    data["sceneName"] = "MainScene";
     socket.broadcast.emit("chatting", data);
   });
 
   socket.on("character", (data) => {
-    let sceneName = players[socket.id].sceneName;
-    let curAnim = players[socket.id].curAnim;
-    players[socket.id].curAnim = `${data.character}${curAnim.substring(
-      curAnim.length - 5
+    let player = players[socket.id];
+    player.curAnim = `${data.character}${player.curAnim.substring(
+      player.curAnim.length - 5
     )}`;
-    players[socket.id].character = data.character;
-    socket.to(sceneName).emit("updatePlayer", players[socket.id]);
-    socket.to(sceneName).emit("toast", data);
+    player.character = data.character;
+    data["sceneName"] = player.sceneName;
+    socket.to(player.sceneName).emit("updatePlayer", player);
+    socket.to(player.sceneName).emit("toast", data);
   });
 
   socket.on("name", (data) => {
-    let sceneName = players[socket.id].sceneName;
-    players[socket.id].name = data.name;
-    socket.to(sceneName).emit("updatePlayer", players[socket.id]);
-    socket.to(sceneName).emit("toast", data);
+    let player = players[socket.id];
+    player.name = data.name;
+    data["sceneName"] = player.sceneName;
+    socket.to(player.sceneName).emit("updatePlayer", player);
+    socket.to(player.sceneName).emit("toast", data);
   });
 
-  socket.on("portal", (data) => {
-    // 포탈로 이동하는 경우, 다른 플레이어에게 알리고 자신의 정보를 업데이트 한다.
-    /*
-     portalName: "portal1",
-      destScene: "MainScene",
-      x: 220,
-      y: 1010,
-      width: 90,
-      height: 12,
-      data: { spawnPosX: 400, spawnPosY: 230 },
+  socket.on("portal", (_data) => {
+    // 포탈로 이동하는 경우, 기존 장면에 있는 사람들에게 알리고 새로운 장면으로 진입한다.
+    const { destScene, data } = _data;
+    let player = players[socket.id];
+    let prevScene = player.sceneName;
+    player.sceneName = destScene;
+    player.x = data.spawnPosX;
+    player.y = data.spawnPosY;
+
+    socket.leave(prevScene);
+    socket
+      .to(prevScene)
+      .emit("exitPlayer", { sceneName: prevScene, playerId: socket.id });
+
+    socket.join(destScene);
+    socket.emit("newScene", destScene); // scene.start on client side
+    socket.emit("currentPlayers", {
+      players: getPlayers(destScene),
+      sceneName: destScene,
     });
-  */
+    socket.to(destScene).emit("newPlayer", { sceneName: destScene, player });
   });
 
   socket.on("disconnect", () => {
     let sceneName = players[socket.id].sceneName;
     delete players[socket.id];
-    socket.to(sceneName).emit("exitPlayer", socket.id);
+    socket.to(sceneName).emit("exitPlayer", { sceneName, playerId: socket.id });
   });
 });
 

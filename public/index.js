@@ -30,8 +30,8 @@ function setMyPlayer(scene, player) {
 
 // Socket Code
 const socket = io();
-socket.on("currentPlayers", (players) => {
-  // currentScene
+socket.on("currentPlayers", (data) => {
+  const { sceneName, players } = data;
   // 플레이어 정보 추가
   // GameScene.eventQueue: Scene이 초기화되지 않은 경우 콜백을 등록하여 처리
   let player = players[socket.id];
@@ -39,13 +39,12 @@ socket.on("currentPlayers", (players) => {
     setMyPlayer(getCurScene(), player);
   } else {
     GameScene.eventQueue.push(() => {
-      setMyPlayer(getInActiveScene(), player);
+      setMyPlayer(getInActiveScene(sceneName), player);
     });
   }
 
   // 다른 플레이어의 정보를 추가한다.
   delete players[socket.id];
-  console.log(players);
 
   let playerArray = Object.values(players);
   playerArray.forEach((player) => {
@@ -53,34 +52,75 @@ socket.on("currentPlayers", (players) => {
       GameScene.addPlayer(getCurScene(), player);
     } else {
       GameScene.eventQueue.push(() => {
-        GameScene.addPlayer(getInActiveScene(), player);
+        GameScene.addPlayer(getInActiveScene(sceneName), player);
       });
     }
   });
 });
 
-socket.on("newPlayer", (player) => {
-  GameScene.addPlayer(getCurScene(), player);
+socket.on("newPlayer", (data) => {
+  const { sceneName, player } = data;
+  if (getCurScene()) {
+    GameScene.addPlayer(getCurScene(), player);
+  } else {
+    GameScene.eventQueue.push(() => {
+      GameScene.addPlayer(getInActiveScene(sceneName), player);
+    });
+  }
 });
 
-socket.on("exitPlayer", (playerId) => {
-  GameScene.removePlayer(getCurScene(), playerId);
+socket.on("exitPlayer", (data) => {
+  const { sceneName, playerId } = data;
+  if (getCurScene()) {
+    GameScene.removePlayer(getCurScene(), playerId);
+  } else {
+    GameScene.eventQueue.push(() => {
+      GameScene.removePlayer(getInActiveScene(sceneName), playerId);
+    });
+  }
 });
 
 socket.on("updatePlayer", (player) => {
-  GameScene.updatePlayer(getCurScene(), player);
+  if (getCurScene()) {
+    GameScene.updatePlayer(getCurScene(), player);
+  } else {
+    GameScene.eventQueue.push(() => {
+      GameScene.updatePlayer(getInActiveScene(player.sceneName), player);
+    });
+  }
+});
+
+socket.on("newScene", (destScene) => {
+  GameScene.newScene(getCurScene(), destScene);
 });
 
 socket.on("chatting", (data) => {
-  const { playerId, message, name } = data;
-  GameScene.setMessage(getCurScene(), playerId, message);
+  const { playerId, message, name, sceneName } = data;
   addChatting(`${name}: ${message}`);
+
+  if (getCurScene()) {
+    GameScene.setMessage(getCurScene(), playerId, message);
+  } else {
+    GameScene.eventQueue.push(() => {
+      GameScene.setMessage(getInActiveScene(sceneName), playerId, message);
+    });
+  }
 });
 
-// 토스트 메시지를 처리한다. (CurrentScene)
 socket.on("toast", (data) => {
-  const { playerId, containerMessage } = data;
-  GameScene.setMessage(getCurScene(), playerId, containerMessage);
+  const { playerId, containerMessage, sceneName } = data;
+
+  if (getCurScene()) {
+    GameScene.setMessage(getCurScene(), playerId, containerMessage);
+  } else {
+    GameScene.eventQueue.push(() => {
+      GameScene.setMessage(
+        getInActiveScene(sceneName),
+        playerId,
+        containerMessage
+      );
+    });
+  }
 });
 
 const config = {
@@ -120,8 +160,10 @@ function getCurScene() {
   return game.scene.getScenes()[0];
 }
 
-function getInActiveScene() {
-  return game.scene.getScenes(false)[0];
+function getInActiveScene(sceneName) {
+  return game.scene
+    .getScenes(false)
+    .filter((data) => data.constructor.name === sceneName)[0];
 }
 
 function addChatting(text) {

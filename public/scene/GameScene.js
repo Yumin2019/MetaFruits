@@ -192,7 +192,8 @@ export default class GameScene extends Phaser.Scene {
     this.nameText = this.add
       .text(0, 0, this.game.global.name)
       .setFont("10px")
-      .setColor("#000000");
+      .setColor("#000000")
+      .setDepth(100);
   }
 
   createCamera() {
@@ -249,16 +250,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createPortal(portalData) {
-    /*
-     portalName: "portal1",
-      destScene: "MainScene",
-      x: 220,
-      y: 1010,
-      width: 90,
-      height: 12,
-      data: { spawnPosX: 400, spawnPosY: 230 },
-    });
-  */
     const { portalName, destScene, x, y, width, height } = portalData;
     const data = portalData.data || {};
 
@@ -268,8 +259,7 @@ export default class GameScene extends Phaser.Scene {
         pair.bodyA.label === "playerSensor" ||
         pair.bodyB.label === "playerSensor"
       ) {
-        // this.scene.start(destScene, data);
-        this.game.global.socket.on("portal", portalData);
+        this.game.global.socket.emit("portal", portalData);
       }
     };
 
@@ -433,7 +423,6 @@ export default class GameScene extends Phaser.Scene {
 
   static updatePlayer(scene, info) {
     const { x, y, flipX, curAnim, playerId, name } = info;
-    console.log(scene.otherPlayers[playerId]);
     let player = scene.otherPlayers[playerId].player;
     let nameText = scene.otherPlayers[playerId].nameText;
 
@@ -450,14 +439,9 @@ export default class GameScene extends Phaser.Scene {
     nameText.y = player.y - player.height * 0.5 - nameText.height;
   }
 
-  /*
-  players[socket.id] = {
-    x: 300,
-    y: 400,
-    playerId: socket.id,
-    // isMainScene: true,
-    name: randomNameGenerator(6),
-    character: characters.at(Math.floor(Math.random() * 5)),
-  };
-  */
+  static newScene(scene, sceneName) {
+    // fix: disable Updating
+    scene.initialized = false;
+    scene.scene.start(sceneName);
+  }
 }
