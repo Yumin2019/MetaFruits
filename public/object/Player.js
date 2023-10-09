@@ -1,4 +1,5 @@
-import GameScene from "./scene/GameScene.js";
+import { socket } from "../gameLogic/SocketLogic.js";
+import GameScene from "../scene/GameScene.js";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(data) {
@@ -7,11 +8,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.scene.add.existing(this);
 
     const { Body, Bodies } = Phaser.Physics.Matter.Matter;
-    var playerCollider = Bodies.circle(this.x, this.y, 12, {
+    let playerCollider = Bodies.circle(this.x, this.y, 12, {
       isSenor: false,
       label: "playerCollider",
     });
-    var playerSensor = Bodies.circle(this.x, this.y, 12, {
+    let playerSensor = Bodies.circle(this.x, this.y, 12, {
       isSensor: true,
       label: "playerSensor",
       onCollideCallback: (pair) => {},
@@ -84,7 +85,6 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     // 위치의 변화가 있었다면 서버에 데이터를 보낸다.
     if (this.x !== this.oldPosition.x || this.y != this.oldPosition.y) {
-      let socket = this.scene.game.global.socket;
       socket.emit("playerMovement", {
         x: this.x,
         y: this.y,

@@ -1,5 +1,6 @@
-import Player from "../Player.js";
-import { divideMessage } from "./../util/util.js";
+import { divideMessage } from "../gameLogic/GameFunc.js";
+import { socket } from "../gameLogic/SocketLogic.js";
+import Player from "../object/Player.js";
 
 export default class GameScene extends Phaser.Scene {
   constructor(data) {
@@ -36,13 +37,12 @@ export default class GameScene extends Phaser.Scene {
   static setMessage(scene, playerId, message) {
     // refactor: 현재 플레이어 정보와 타 플레이어의 정보를 분리하여 처리하고 있는데
     // 굳이 그럴 필요가 없을 것으로 보인다. 공통으로 처리할 수 있는 부분으로 정리하는 게 좋을 듯.
-    const isMyInfo = playerId === scene.game.global.socket.id;
+    const isMyInfo = playerId === socket.id;
     const playerJson = isMyInfo ? undefined : scene.otherPlayers[playerId];
 
     // 다른 Scene에 존재하는 플레이어의 경우 제외한다.
     if (!isMyInfo && !playerJson) return;
 
-    console.log(`message = ${message}`);
     const text = divideMessage(message);
     const messageRect = isMyInfo ? scene.messageRect : playerJson.messageRect;
     const messageText = isMyInfo ? scene.messageText : playerJson.messageText;
@@ -262,8 +262,8 @@ export default class GameScene extends Phaser.Scene {
         GameScene.newScene(this, destScene);
         // fix: 장면 전환후 회색화면이 표츌되는 이슈 수정
         setTimeout(() => {
-          this.game.global.socket.emit("portal", portalData);
-        }, 100);
+          socket.emit("portal", portalData);
+        }, 50);
       }
     };
 
