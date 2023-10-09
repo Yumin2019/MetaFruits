@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head> </head>
-
+  <link rel="icon" href="./favicon.png" />
   <style>
     #game-root {
       position: relative;
@@ -301,9 +301,20 @@
       height: 100%;
     }
 
+    .video-cover {
+      border-radius: 8px;
+      width: 100%;
+      height: 100%;
+      background-color: #d5d5d5;
+      font-weight: bold;
+      font-size: 22px;
+      text-align: center;
+    }
+
     .video-status {
-      position: relative;
-      bottom: -8px;
+      position: absolute;
+      top: 142px;
+      width: 180px;
       border-radius: 16px;
       background-color: rgba(255, 255, 255, 0.7);
       font-size: 20px;
@@ -382,10 +393,12 @@
     <!-- WebRTC 영상 출력 리스트 -->
     <div class="video-parent">
       <div class="video-parent-inner">
-        <div class="video-parent-content">
+        <div id="video-parent-content" class="video-parent-content">
+          <!-- 비디오 자리 -->
+          <!-- <video class="video"></video> -->
           <!-- <div class="video-div">
-            <video class="video"></video>
-            <div class="video-status">cam: ❌ mike: ✔️</div>
+            <div class="video-cover">카메라 OFF</div>
+            <div class="video-status">cam: ✔️ mike: ✔️</div>
           </div> -->
         </div>
       </div>

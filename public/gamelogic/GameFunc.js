@@ -62,3 +62,18 @@ export function setMyPlayer(scene, player) {
 
   GameScene.setMyPlayer(scene, player);
 }
+
+export function hideElement(el) {
+  el.style.display = "none";
+}
+
+export function showElement(el) {
+  el.style.display = "block";
+}
+
+export function updateVideoStatus(playerId, cameraOn, mikeOn) {
+  let videoStatus = document.getElementById(`video-status-${playerId}`);
+  videoStatus.innerText = `cam: ${cameraOn ? "✔️" : "❌"} mike: ${
+    mikeOn ? "✔️" : "❌"
+  }`;
+}

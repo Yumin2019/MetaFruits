@@ -1,7 +1,13 @@
 import GameScene from "../scene/GameScene.js";
 import { game, getCurScene } from "../index.js";
 import { addChatting, setChattingList } from "./GameFunc.js";
-import { socket } from "./SocketLogic.js";
+import {
+  getDevices,
+  getLocalStream,
+  handleCameraClick,
+  handleMikeClick,
+  socket,
+} from "./SocketLogic.js";
 
 // 채팅 UI
 export const chattingInput = document.getElementById("chatting-input");
@@ -193,7 +199,7 @@ cameraButton.addEventListener("click", (event) => {
     cameraStatus.style.display = "block";
   }
 
-  // 실제 처리
+  handleCameraClick();
 });
 
 mikeButton.addEventListener("click", (event) => {
@@ -204,12 +210,18 @@ mikeButton.addEventListener("click", (event) => {
     mikeStatus.style.display = "block";
   }
 
-  // 실제 처리
+  handleMikeClick();
 });
 
 settingButton.addEventListener("click", (event) => {
   deviceDialog.open ? deviceDialog.close() : deviceDialog.show();
   game.input.keyboard.enabled = !deviceDialog.open;
+
+  if (deviceDialog.open) {
+    getDevices("videoinput", "camera");
+    getDevices("audioinput", "mike");
+    getDevices("audiooutput", "speaker");
+  }
 });
 
 minimapButton.addEventListener("click", (event) => {
@@ -229,12 +241,14 @@ speakerDropdownDiv.addEventListener("click", (event) => {
 });
 
 // Close the dropdown menu if the user clicks outside of it
+// 드롭다운 메뉴에서 처리된다.
 window.onclick = (event) => {
   if (!event.target.matches(".dropbtn")) {
-    var dropdowns = document.getElementsByClassName("dropdown-content");
-    var i;
-    for (i = 0; i < dropdowns.length; i++) {
-      var openDropdown = dropdowns[i];
+    event.preventDefault();
+
+    let dropdowns = document.getElementsByClassName("dropdown-content");
+    for (let i = 0; i < dropdowns.length; i++) {
+      let openDropdown = dropdowns[i];
       if (openDropdown.classList.contains("show")) {
         openDropdown.classList.remove("show");
       }
@@ -248,4 +262,6 @@ window.onload = (e) => {
     game.input.keyboard.enabled = true;
     document.getElementById("chatting-input").blur();
   });
+
+  getLocalStream();
 };
