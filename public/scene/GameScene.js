@@ -259,11 +259,19 @@ export default class GameScene extends Phaser.Scene {
         pair.bodyA.label === "playerSensor" ||
         pair.bodyB.label === "playerSensor"
       ) {
-        GameScene.newScene(this, destScene);
-        // fix: 장면 전환후 회색화면이 표츌되는 이슈 수정
-        setTimeout(() => {
-          socket.emit("portal", portalData);
-        }, 50);
+        // 충돌시 장면 전환(Fade 효과)
+        this.initialized = false;
+        this.cameras.main.fadeOut(250, 200, 200, 200);
+        this.cameras.main.once(
+          Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+          (cam, effect) => {
+            this.scene.start(destScene);
+            // fix: 장면 전환후 회색화면이 표츌되는 이슈 수정
+            setTimeout(() => {
+              socket.emit("portal", portalData);
+            }, 25);
+          }
+        );
       }
     };
 
@@ -365,6 +373,8 @@ export default class GameScene extends Phaser.Scene {
 
     scene.nameText.setText(name);
     scene.initialized = true;
+
+    scene.cameras.main.fadeIn(250, 200, 200, 200);
   }
 
   // 새로운 플레이어를 추가한다.
@@ -443,11 +453,5 @@ export default class GameScene extends Phaser.Scene {
     // update name texta
     nameText.x = player.x - nameText.width * 0.5;
     nameText.y = player.y - player.height * 0.5 - nameText.height;
-  }
-
-  static newScene(scene, sceneName) {
-    // fix: disable Updating
-    scene.initialized = false;
-    scene.scene.start(sceneName);
   }
 }

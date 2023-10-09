@@ -13,9 +13,9 @@ export function getInActiveScene(sceneName) {
 
 const config = {
   type: Phaser.CANVAS,
-  width: 600, // 800, 400
+  width: 600,
   height: 300,
-  backgroundColor: "#999999",
+  backgroundColor: "#c8c8c8", // rgb(200, 200, 200)
   parent: "game-root",
   scene: [MainScene, HouseScene],
   scale: {
