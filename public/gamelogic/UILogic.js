@@ -241,3 +241,11 @@ window.onclick = (event) => {
     }
   }
 };
+
+// fix: game.canvas.addEventListener on Load of window elemment
+window.onload = (e) => {
+  game.canvas.addEventListener("mousedown", (event) => {
+    game.input.keyboard.enabled = true;
+    document.getElementById("chatting-input").blur();
+  });
+};

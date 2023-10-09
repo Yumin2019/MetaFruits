@@ -1,5 +1,6 @@
 const express = require("express");
 const { createServer } = require("http");
+const path = require("path");
 const { Server } = require("socket.io");
 
 const app = express();
@@ -148,4 +149,10 @@ io.on("connection", (socket) => {
 });
 
 app.use(express.static("public"));
+app.use(express.static("dist"));
+
+app.get("/*", (req, res) => {
+  res.sendFile(__dirname + "/../dist/index.html");
+});
+
 httpServer.listen(3000);

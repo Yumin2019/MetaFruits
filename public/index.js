@@ -1,15 +1,6 @@
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
-
-export function getCurScene() {
-  return game.scene.getScenes()[0];
-}
-
-export function getInActiveScene(sceneName) {
-  return game.scene
-    .getScenes(false)
-    .filter((data) => data.constructor.name === sceneName)[0];
-}
+import PhaserMatterCollisionPlugin from "phaser-matter-collision-plugin";
 
 const config = {
   type: Phaser.CANVAS,
@@ -44,7 +35,7 @@ const config = {
   },
 };
 
-export const game = new Phaser.Game(config);
+export var game = new Phaser.Game(config);
 game.global = {
   minimap: true,
   character: "apple",
@@ -55,7 +46,12 @@ game.global = {
   roomChattingList: [],
 };
 
-game.canvas.addEventListener("mousedown", (event) => {
-  game.input.keyboard.enabled = true;
-  document.getElementById("chatting-input").blur();
-});
+export function getCurScene() {
+  return game.scene.getScenes()[0];
+}
+
+export function getInActiveScene(sceneName) {
+  return game.scene
+    .getScenes(false)
+    .filter((data) => data.constructor.name === sceneName)[0];
+}

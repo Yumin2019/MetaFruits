@@ -1,6 +1,7 @@
 import { divideMessage } from "../gameLogic/GameFunc.js";
 import { socket } from "../gameLogic/SocketLogic.js";
 import Player from "../object/Player.js";
+import Phaser from "phaser";
 
 export default class GameScene extends Phaser.Scene {
   constructor(data) {

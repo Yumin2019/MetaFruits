@@ -1,5 +1,6 @@
 import { socket } from "../gameLogic/SocketLogic.js";
 import GameScene from "../scene/GameScene.js";
+import Phaser from "phaser";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(data) {

@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/phaser-matter-collision-plugin"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="/index.js"></script>
-  </head>
+  <head> </head>
 
   <style>
     #game-root {
@@ -518,4 +513,9 @@
       </div>
     </section>
   </body>
+
+  <footer>
+    <!-- fix: WebPack 환경에서 Dom Element를 찾지 못하는 오류 수정 -->
+    <script src="./main.js"></script>
+  </footer>
 </html>

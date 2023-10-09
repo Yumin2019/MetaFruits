@@ -2,6 +2,7 @@ import GameScene from "../scene/GameScene.js";
 import { game, getCurScene, getInActiveScene } from "../index.js";
 import { addChatting, setChattingList, setMyPlayer } from "./GameFunc.js";
 import { chattingChannel } from "./UILogic.js";
+import { io } from "socket.io-client";
 
 export const socket = io();
 
@@ -122,3 +123,86 @@ socket.on("toast", (data) => {
     });
   }
 });
+
+// ================= 미디어수프 코드 =================
+// const mediasoupClient = require("mediasoup-client");
+
+// https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerOptions
+// https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
+// let params = {
+//   // mediasoup params
+//   encodings: [
+//     {
+//       rid: "r0",
+//       maxBitrate: 100000,
+//       scalabilityMode: "S1T3",
+//     },
+//     {
+//       rid: "r1",
+//       maxBitrate: 300000,
+//       scalabilityMode: "S1T3",
+//     },
+//     {
+//       rid: "r2",
+//       maxBitrate: 900000,
+//       scalabilityMode: "S1T3",
+//     },
+//   ],
+//   // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerCodecOptions
+//   codecOptions: {
+//     videoGoogleStartBitrate: 1000,
+//   },
+// };
+
+// let device;
+// let rtpCapabilities;
+// let producerTransport;
+// let consumerTransports = [];
+// let audioProducer;
+// let videoProducer;
+
+// let audioParams;
+// let videoParams = { params };
+// let consumingTransports = [];
+
+// const streamSuccess = (stream) => {
+//   localVideo.srcObject = stream;
+
+//   // audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
+//   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
+
+//   joinRoom();
+// };
+
+// const joinRoom = () => {
+//   // socket.emit("joinRoom", { roomName }, (data) => {
+//   //   console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
+//   //   // we assign to local variable and will be used when
+//   //   // loading the client Device (see createDevice above)
+//   //   rtpCapabilities = data.rtpCapabilities;
+//   //   // once we have rtpCapabilities from the Router, create Device
+//   //   createDevice();
+//   // });
+// };
+
+// const getLocalStream = () => {
+//   navigator.mediaDevices
+//     .getUserMedia({
+//       audio: true,
+//       video: {
+//         width: {
+//           min: 640,
+//           max: 1920,
+//         },
+//         height: {
+//           min: 400,
+//           max: 1080,
+//         },
+//       },
+//     })
+//     .then(streamSuccess)
+//     .catch((error) => {
+//       console.log(error.message);
+//     });
+// };
+// getLocalStream();
