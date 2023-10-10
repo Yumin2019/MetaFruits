@@ -290,8 +290,7 @@
       height: 120px;
       border-radius: 16px;
       background-color: white;
-      /* border: 0.5px solid grey; */
-      border: 4px solid #48abe0;
+      border: 4px solid #9f9f9f;
       margin: 8px;
     }
 
@@ -305,6 +304,7 @@
       border-radius: 8px;
       width: 100%;
       height: 100%;
+
       background-color: #d5d5d5;
       font-weight: bold;
       font-size: 22px;
@@ -387,6 +387,20 @@
     .show {
       display: block;
     }
+
+    /* Mike volume Test of Device Setting */
+    .pids-wrapper {
+      margin: 24px 0px 12px 0px;
+      width: 400px;
+    }
+
+    .pid {
+      width: calc(10% - 20px);
+      height: 40px;
+      display: inline-block;
+      margin: 5px;
+      background-color: #e6e7e8;
+    }
   </style>
 
   <body id="game-root">
@@ -395,8 +409,8 @@
       <div class="video-parent-inner">
         <div id="video-parent-content" class="video-parent-content">
           <!-- 비디오 자리 -->
-          <!-- <video class="video"></video> -->
-          <!-- <div class="video-div">
+          <!-- <div class="video-div" style="border: 4px solid red">
+            <video class="video"></video>
             <div class="video-cover">카메라 OFF</div>
             <div class="video-status">cam: ✔️ mike: ✔️</div>
           </div> -->
@@ -462,11 +476,23 @@
         </div>
       </div>
 
-      <div style="font-size: 24px; margin: 32px 0px">
-        🟦🟦🟦🟦🟦⬜⬜⬜⬜⬜⬜
+      <div class="pids-wrapper">
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
+        <div class="pid"></div>
       </div>
 
-      <button style="position: absolute; right: 32px; top: 240px">
+      <button
+        id="mike-test"
+        style="position: absolute; right: 32px; top: 240px; width: 100px"
+      >
         마이크 테스트
       </button>
 

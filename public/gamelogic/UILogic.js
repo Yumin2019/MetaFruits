@@ -193,6 +193,8 @@ nameDialogClose.addEventListener("click", (event) => {
 
 deviceDialog.addEventListener("close", (event) => {
   game.input.keyboard.enabled = true;
+  mikeTest = false;
+  updateMikeCheck();
 });
 
 deviceDialogOk.addEventListener("click", (event) => {
@@ -250,6 +252,26 @@ mikeDropdownDiv.addEventListener("click", (event) => {
 
 speakerDropdownDiv.addEventListener("click", (event) => {
   speakerDropdown.classList.toggle("show");
+});
+
+export const mikeTestButton = document.getElementById("mike-test");
+export let mikeTest = false;
+
+function updateMikeCheck() {
+  // 색상 정리
+  if (!mikeTest) {
+    mikeTestButton.innerText = "마이크 테스트";
+    const allPids = [...document.querySelectorAll(".pid")];
+    for (const pid of allPids) pid.style.backgroundColor = "#e6e7e8";
+  } else {
+    mikeTestButton.innerText = "테스트 정지";
+  }
+}
+
+// 마이크 테스트 on/off
+mikeTestButton.addEventListener("click", (event) => {
+  mikeTest = !mikeTest;
+  updateMikeCheck();
 });
 
 // Close the dropdown menu if the user clicks outside of it

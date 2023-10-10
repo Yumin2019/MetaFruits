@@ -9,7 +9,7 @@ import {
   showElement,
   updateVideoStatus,
 } from "./GameFunc.js";
-import { cameraButton, chattingChannel } from "./UILogic.js";
+import { cameraButton, chattingChannel, mikeTest } from "./UILogic.js";
 import { io } from "socket.io-client";
 
 export const socket = io();
@@ -176,6 +176,20 @@ let streams = {};
 let isCameraOn = true;
 let isMikeOn = true;
 
+let myVideoDiv;
+
+function colorPids(vol) {
+  const allPids = [...document.querySelectorAll(".pid")];
+  const numberOfPidsToColor = Math.round(vol / 10);
+  const pidsToColor = allPids.slice(0, numberOfPidsToColor);
+  for (const pid of allPids) {
+    pid.style.backgroundColor = "#e6e7e8";
+  }
+  for (const pid of pidsToColor) {
+    pid.style.backgroundColor = "#99d9ea";
+  }
+}
+
 const streamSuccess = async (stream) => {
   // 스트림이 들어오면 영상 뷰를 추가한다.
   let playerId = socket.id;
@@ -185,9 +199,10 @@ const streamSuccess = async (stream) => {
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
 
-  let videoDiv = document.createElement("video-div");
+  let videoDiv = document.createElement("div");
   videoDiv.setAttribute("class", "video-div");
   videoDiv.setAttribute("id", `vidoe-div-${playerId}`);
+  myVideoDiv = videoDiv;
 
   // ID는 video-div-${id}, vidoe-${id}, video-status-${id}, video-cover-${id}로 관리한다.
   videoDiv.innerHTML =
@@ -210,6 +225,30 @@ const streamSuccess = async (stream) => {
   // speaker 기본값으로 설정
   let devices = await getDevicesByKind("audiooutput");
   attachSinkId(video, devices[0].deviceId);
+
+  // 음성 볼륨 인식
+  let audioContext = new AudioContext();
+  let analyser = audioContext.createAnalyser();
+  let microphone = audioContext.createMediaStreamSource(stream);
+  let javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+  analyser.smoothingTimeConstant = 0.8;
+  analyser.fftSize = 1024;
+
+  microphone.connect(analyser);
+  analyser.connect(javascriptNode);
+  javascriptNode.connect(audioContext.destination);
+  javascriptNode.onaudioprocess = function () {
+    const array = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(array);
+    const arraySum = array.reduce((a, value) => a + value, 0);
+    const average = Math.round(arraySum / array.length);
+
+    if (mikeTest) colorPids(average);
+    myVideoDiv.style.border = `4px solid ${
+      average > 10 ? "#99d9ea" : "#9f9f9f"
+    }`;
+    // console.log(average);
+  };
 
   joinRoom();
 };
