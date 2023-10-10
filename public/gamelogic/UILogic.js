@@ -37,10 +37,12 @@ mikeStatus.style.display = "none";
 export const nameDialog = document.getElementById("nameDialog");
 export const nameDialogInput = document.getElementById("nameDialog-input");
 export const nameDialogOk = document.getElementById("nameDialog-ok");
+export const nameDialogClose = document.getElementById("nameDialog-close");
 
 // 장치설정 Dialog
 export const deviceDialog = document.getElementById("deviceDialog");
 export const deviceDialogOk = document.getElementById("deviceDialog-ok");
+export const deviceDialogClose = document.getElementById("deviceDialog-close");
 
 // 장치 설정쪽
 export const cameraDropdown = document.getElementById("cameraDropdown");
@@ -165,7 +167,7 @@ nameDialog.addEventListener("close", (event) => {
 nameDialogOk.addEventListener("click", (event) => {
   let name = nameDialogInput.value;
   if (name === game.global.name || name.length === 0) {
-    event.preventDefault();
+    nameDialog.close();
     return;
   }
 
@@ -185,11 +187,21 @@ nameDialogOk.addEventListener("click", (event) => {
   });
 });
 
+nameDialogClose.addEventListener("click", (event) => {
+  nameDialog.close();
+});
+
 deviceDialog.addEventListener("close", (event) => {
   game.input.keyboard.enabled = true;
 });
 
-deviceDialogOk.addEventListener("click", (event) => {});
+deviceDialogOk.addEventListener("click", (event) => {
+  deviceDialog.close();
+});
+
+deviceDialogClose.addEventListener("click", (event) => {
+  deviceDialog.close();
+});
 
 cameraButton.addEventListener("click", (event) => {
   // 카메라 온오프, 상태 표시

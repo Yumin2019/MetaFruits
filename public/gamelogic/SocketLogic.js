@@ -173,7 +173,10 @@ let videoParams = { params };
 let consumingTransports = [];
 let streams = {};
 
-const streamSuccess = (stream) => {
+let isCameraOn = true;
+let isMikeOn = true;
+
+const streamSuccess = async (stream) => {
   // 스트림이 들어오면 영상 뷰를 추가한다.
   let playerId = socket.id;
   streams[playerId] = stream;
@@ -203,6 +206,10 @@ const streamSuccess = (stream) => {
 
   let video = document.getElementById(`video-${playerId}`);
   video.srcObject = stream;
+
+  // speaker 기본값으로 설정
+  let devices = await getDevicesByKind("audiooutput");
+  attachSinkId(video, devices[0].deviceId);
 
   joinRoom();
 };
@@ -241,9 +248,6 @@ export const getLocalStream = () => {
     });
 };
 
-let isCameraOn = true;
-let isMikeOn = true;
-
 export function handleCameraClick() {
   let playerId = socket.id;
   streams[playerId].getVideoTracks().forEach((track) => {
@@ -273,21 +277,19 @@ export function handleMikeClick() {
   updateVideoStatus(playerId, isCameraOn, isMikeOn);
 }
 
-async function handleCameaChange() {
-  await getMedia(camearsSelect.value);
-  if (sendPeer) {
-    const videoTrack = myStream.getVideoTracks()[0];
-    const videoSender = sendPeer
-      .getSenders()
-      .find((sender) => sender.track.kind === "video");
+// async function handleCameaChange() {
+//   await getMedia(camearsSelect.value);
+//   if (sendPeer) {
+//     const videoTrack = myStream.getVideoTracks()[0];
+//     const videoSender = sendPeer
+//       .getSenders()
+//       .find((sender) => sender.track.kind === "video");
 
-    videoSender.replaceTrack(videoTrack);
-  }
-}
+//     videoSender.replaceTrack(videoTrack);
+//   }
+// }
 
 async function changeDevice(aElement, localName) {
-  // 스피커 교체는 어떻게 하는건지 좀 찾아봐야 할 듯 ...
-
   let curDeviceEl = document.getElementById(`${localName}DropdownDiv`);
   let deviceId = aElement.getAttribute("href");
   console.log(localName);
@@ -296,47 +298,58 @@ async function changeDevice(aElement, localName) {
   // 이미 해당 기기를 사용하고 있는 경우는 제외한다.
   if (curDeviceEl.innerText === aElement.innerHTML) return;
 
-  /*
-   audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
-    video: {deviceId: videoSource ? {exact: videoSource} : undefined}
-  */
-  let constraints =
-    localName === "camera"
-      ? {
-          audio: isAudioEnabledForDebug, // true
-          video: {
-            deviceId: { exact: deviceId },
-            width: {
-              min: 180,
-              max: 180,
-            },
-            height: {
-              min: 120,
-              max: 120,
-            },
-          },
-        }
-      : {
-          audio: { deviceId: { exact: deviceId } }, // true
-          video: false,
-        };
+  if (localName === "speaker") {
+    let video = document.getElementById(`video-${socket.id}`);
+    attachSinkId(video, deviceId, () => {
+      curDeviceEl.innerText = aElement.innerText;
+    });
+    return;
+  }
 
   try {
-    let myStream = await navigator.mediaDevices.getUserMedia(constraints);
+    let constraints =
+      localName === "camera"
+        ? {
+            audio: false,
+            video: {
+              deviceId: { exact: deviceId },
+              width: {
+                min: 180,
+                max: 180,
+              },
+              height: {
+                min: 120,
+                max: 120,
+              },
+            },
+          }
+        : {
+            audio: { deviceId: { exact: deviceId } },
+            video: false,
+          };
+
     // 기존에 있던 track을 삭제하고 새로운 track을 추가한다. (교체)
-    let track =
+    let myStream = await navigator.mediaDevices.getUserMedia(constraints);
+    let prevTrack =
       localName === "camera"
         ? streams[socket.id].getVideoTracks()[0]
         : streams[socket.id].getAudioTracks()[0];
-    streams[socket.id].removeTrack(track);
 
-    streams[socket.id].addTrack(
+    let newTrack =
       localName === "camera"
         ? myStream.getVideoTracks()[0]
-        : myStream.getAudioTracks()[0]
-    );
+        : myStream.getAudioTracks()[0];
+
+    streams[socket.id].removeTrack(prevTrack);
+    streams[socket.id].addTrack(newTrack);
+
+    // 현재 flag에 따라 처리한다.
+    localName === "camera"
+      ? (newTrack.enabled = isCameraOn)
+      : (newTrack.enabled = isMikeOn);
 
     curDeviceEl.innerText = aElement.innerText;
+    console.log(`changed device ${aElement.innerText}`);
   } catch (error) {
     console.log(error);
   }
@@ -347,12 +360,13 @@ async function getDevicesByKind(kind) {
   return devices.filter((device) => device.kind === kind);
 }
 
-function attachSinkId(element, sinkId) {
+function attachSinkId(element, sinkId, _success, _error) {
   if (typeof element.sinkId !== "undefined") {
     element
       .setSinkId(sinkId)
       .then(() => {
         console.log(`Success, audio output device attached: ${sinkId}`);
+        if (_success) _success();
       })
       .catch((error) => {
         let errorMessage = error;
@@ -360,69 +374,34 @@ function attachSinkId(element, sinkId) {
           errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
         }
         console.error(errorMessage);
+        if (_error) _error();
         // Jump back to first output device in the list as it's the default.
         // audioOutputSelect.selectedIndex = 0;
       });
   } else {
     console.warn("Browser does not support output device selection.");
+    if (_error) _error();
   }
 }
 
 export async function getDevices(kind, localName) {
   try {
-    let devices = await getDevicesByKind(kind);
-
-    if (localName === "speaker") {
-      // if (!navigator.mediaDevices.selectAudioOutput) {
-      //   console.log("selectAudioOutput() not supported.");
-      //   return;
-      // }
-
-      // // Display prompt and log selected device or error
-      // navigator.mediaDevices
-      //   .selectAudioOutput()
-      //   .then((device) => {
-      //     console.log(
-      //       `${device.kind}: ${device.label} id = ${device.deviceId}`
-      //     );
-      //   })
-      //   .catch((err) => {
-      //     console.error(`${err.name}: ${err.message}`);
-      //   });
-      let videoEl = document.getElementById(`video-${socket.id}`);
-      // attachSinkId(videoEl, devices[1].deviceId);
-
-      if (typeof videoEl.sinkId !== "undefined") {
-        videoEl
-          .setSinkId(devices[1].deviceId)
-          .then(() => {
-            console.log(
-              `Success, audio output device attached: ${devices[1].deviceId}`
-            );
-          })
-          .catch((error) => {
-            let errorMessage = error;
-            if (error.name === "SecurityError") {
-              errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-            }
-            console.error(errorMessage);
-            // Jump back to first output device in the list as it's the default.
-            // audioOutputSelect.selectedIndex = 0;
-          });
-      } else {
-        console.warn("Browser does not support output device selection.");
-      }
-
-      return;
-    }
-
     // 기기 리스트를 받고, 현재 기기 이름을 보여준다.
+    let devices = await getDevicesByKind(kind);
     let deviceDropdown = document.getElementById(`${localName}Dropdown`);
     let curDeviceEl = document.getElementById(`${localName}DropdownDiv`);
-    let curDevice =
-      localName === "camera"
-        ? streams[socket.id].getVideoTracks()[0]
-        : streams[socket.id].getAudioTracks()[0];
+    let curDevice;
+
+    if (localName === "camera") {
+      curDevice = streams[socket.id].getVideoTracks()[0];
+    } else if (localName === "mike") {
+      curDevice = streams[socket.id].getAudioTracks()[0];
+    } else {
+      let video = document.getElementById(`video-${socket.id}`);
+      curDevice = devices.filter(
+        (device) => device.deviceId === video.sinkId
+      )[0];
+    }
 
     deviceDropdown.innerHTML = "";
     curDeviceEl.innerText = curDevice.label;
