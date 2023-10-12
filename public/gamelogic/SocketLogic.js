@@ -298,7 +298,7 @@ function releaseVideoInfo(remoteProducerId) {
 export const getLocalStream = () => {
   navigator.mediaDevices
     .getUserMedia({
-      audio: false, // true
+      audio: true, // true
       video: {
         width: {
           min: 180,
@@ -416,20 +416,20 @@ const connectSendTransport = async () => {
   // https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
   // this action will trigger the 'connect' and 'produce' events above
 
-  // audioProducer = await producerTransport.produce(audioParams);
+  audioProducer = await producerTransport.produce(audioParams);
   videoProducer = await producerTransport.produce(videoParams);
 
-  // audioProducer.on("trackended", () => {
-  //   console.log("audio track ended");
+  audioProducer.on("trackended", () => {
+    console.log("audio track ended");
 
-  //   // close audio track
-  // });
+    // close audio track
+  });
 
-  // audioProducer.on("transportclose", () => {
-  //   console.log("audio transport ended");
+  audioProducer.on("transportclose", () => {
+    console.log("audio transport ended");
 
-  //   // close audio track
-  // });
+    // close audio track
+  });
 
   videoProducer.on("trackended", () => {
     console.log("video track ended");
@@ -617,7 +617,7 @@ async function changeDevice(aElement, localName) {
     let constraints =
       localName === "camera"
         ? {
-            audio: false,
+            audio: true,
             video: {
               deviceId: { exact: deviceId },
               width: {
