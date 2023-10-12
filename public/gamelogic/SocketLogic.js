@@ -1,8 +1,9 @@
 import GameScene from "../scene/GameScene.js";
-import mediasoupClient from "mediasoup-client";
+import * as mediasoupClient from "mediasoup-client";
 import { game, getCurScene, getInActiveScene } from "../index.js";
 import {
   addChatting,
+  colorPids,
   hideElement,
   setChattingList,
   setMyPlayer,
@@ -170,106 +171,134 @@ let videoProducer;
 
 let audioParams;
 let videoParams = { params };
-let consumingTransports = [];
+let consumingTransports = []; // remoteProducerId array
 let streams = {};
 
 let isCameraOn = true;
 let isMikeOn = true;
 
-let myVideoDiv;
+function createVideoDiv(id, stream) {
+  let videoDiv = document.createElement("div");
+  videoDiv.setAttribute("class", "video-div");
+  videoDiv.setAttribute("id", `video-div-${id}`);
 
-function colorPids(vol) {
-  const allPids = [...document.querySelectorAll(".pid")];
-  const numberOfPidsToColor = Math.round(vol / 10);
-  const pidsToColor = allPids.slice(0, numberOfPidsToColor);
-  for (const pid of allPids) {
-    pid.style.backgroundColor = "#e6e7e8";
+  // ID는 video-div-${id}, vidoe-${id}, video-status-${id}, video-cover-${id}로 관리한다.
+  videoDiv.innerHTML =
+    '<video id="' +
+    `video-${id}` +
+    '" class="video" autoplay></video>' +
+    '<div id="' +
+    `video-cover-${id}` +
+    '"class="video-cover" style="display: none;">카메라 OFF</div>' +
+    '<div id="' +
+    `video-status-${id}` +
+    '" class="video-status">cam: ✔️ mike: ✔️</div>';
+
+  // video parent list에 추가 한다.
+  let videoParent = document.getElementById("video-parent-content");
+  videoParent.appendChild(videoDiv);
+
+  let video = document.getElementById(`video-${id}`);
+  video.srcObject = stream;
+
+  // 음성 볼륨 인식
+  if (stream.getAudioTracks().length > 0) {
+    let audioContext = new AudioContext();
+    let analyser = audioContext.createAnalyser();
+    let microphone = audioContext.createMediaStreamSource(stream);
+    let javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+    analyser.smoothingTimeConstant = 0.8;
+    analyser.fftSize = 1024;
+
+    microphone.connect(analyser);
+    analyser.connect(javascriptNode);
+    javascriptNode.connect(audioContext.destination);
+    javascriptNode.onaudioprocess = function () {
+      const array = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(array);
+
+      const arraySum = array.reduce((a, value) => a + value, 0);
+      const average = Math.round(arraySum / array.length);
+
+      videoDiv.style.border = `4px solid ${
+        average > 10 ? "#99d9ea" : "#9f9f9f"
+      }`;
+      if (socket.id === id && mikeTest) colorPids(average);
+    };
   }
-  for (const pid of pidsToColor) {
-    pid.style.backgroundColor = "#99d9ea";
-  }
+
+  return videoDiv;
 }
 
 const streamSuccess = async (stream) => {
   // 스트림이 들어오면 영상 뷰를 추가한다.
   let playerId = socket.id;
   streams[playerId] = stream;
-  // console.log(streams[playerId]);
 
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
-
-  let videoDiv = document.createElement("div");
-  videoDiv.setAttribute("class", "video-div");
-  videoDiv.setAttribute("id", `vidoe-div-${playerId}`);
-  myVideoDiv = videoDiv;
-
-  // ID는 video-div-${id}, vidoe-${id}, video-status-${id}, video-cover-${id}로 관리한다.
-  videoDiv.innerHTML =
-    '<video id="' +
-    `video-${playerId}` +
-    '" class="video" autoplay></video>' +
-    '<div id="' +
-    `video-cover-${playerId}` +
-    '"class="video-cover" style="display: none;">카메라 OFF</div>' +
-    '<div id="' +
-    `video-status-${playerId}` +
-    '" class="video-status">cam: ✔️ mike: ✔️</div>';
-
-  let videoParent = document.getElementById("video-parent-content");
-  videoParent.appendChild(videoDiv);
-
-  let video = document.getElementById(`video-${playerId}`);
-  video.srcObject = stream;
+  createVideoDiv(socket.id, stream);
 
   // speaker 기본값으로 설정
   let devices = await getDevicesByKind("audiooutput");
-  attachSinkId(video, devices[0].deviceId);
-
-  // 음성 볼륨 인식
-  let audioContext = new AudioContext();
-  let analyser = audioContext.createAnalyser();
-  let microphone = audioContext.createMediaStreamSource(stream);
-  let javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-  analyser.smoothingTimeConstant = 0.8;
-  analyser.fftSize = 1024;
-
-  microphone.connect(analyser);
-  analyser.connect(javascriptNode);
-  javascriptNode.connect(audioContext.destination);
-  javascriptNode.onaudioprocess = function () {
-    const array = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(array);
-    const arraySum = array.reduce((a, value) => a + value, 0);
-    const average = Math.round(arraySum / array.length);
-
-    if (mikeTest) colorPids(average);
-    myVideoDiv.style.border = `4px solid ${
-      average > 10 ? "#99d9ea" : "#9f9f9f"
-    }`;
-    // console.log(average);
-  };
-
-  joinRoom();
+  let video = document.getElementById(`video-${playerId}`);
+  if (stream.getAudioTracks().length > 0) {
+    attachSinkId(video, devices[0].deviceId);
+  }
 };
 
-const joinRoom = () => {
-  // socket.emit("joinRoom", { roomName }, (data) => {
-  //   console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
-  //   // we assign to local variable and will be used when
-  //   // loading the client Device (see createDevice above)
-  //   rtpCapabilities = data.rtpCapabilities;
-  //   // once we have rtpCapabilities from the Router, create Device
-  //   createDevice();
-  // });
+export const joinRoom = () => {
+  socket.emit("joinRoom", { roomName: "HouseScene" }, (data) => {
+    // console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
+    // we assign to local variable and will be used when
+    // loading the client Device (see createDevice above)
+    rtpCapabilities = data.rtpCapabilities;
+    // once we have rtpCapabilities from the Router, create Device
+    createDevice();
+  });
 };
 
-let isAudioEnabledForDebug = true;
+export const exitRoom = () => {
+  // 서버에서 리소스를 정리한다.
+  socket.emit("exitRoom", { roomName: "HouseScene" });
+
+  // 클라에서 리소스를 정리한다.
+  // 기존에 있던 유저는 producerClosed 이벤트를 받아서 RC, LC에 대한 처리를 한다.
+  // 서버에서도 유저가 나갈 때 데이터를 날린다.
+  // 서버에서 자신과 관련된 모든 정보를 close하므로 클라이언트 쪽에서도 갱신을 해준다.
+  consumingTransports.forEach((remoteProducerId) => {
+    releaseVideoInfo(remoteProducerId);
+  });
+};
+
+function releaseVideoInfo(remoteProducerId) {
+  const producerToClose = consumerTransports.find(
+    (transportData) => transportData.producerId === remoteProducerId
+  );
+
+  producerToClose.consumerTransport.close();
+  producerToClose.consumer.close();
+
+  // remove the consumer transport from the list
+  consumerTransports = consumerTransports.filter(
+    (transportData) => transportData.producerId !== remoteProducerId
+  );
+
+  // id 정보도 없앤다.
+  consumingTransports = consumingTransports.filter(
+    (producerId) => producerId !== remoteProducerId
+  );
+
+  // remove the video div element
+  let child = document.getElementById(`video-div-${remoteProducerId}`);
+  let parent = document.getElementById("video-parent-content");
+  parent.removeChild(child);
+}
 
 export const getLocalStream = () => {
   navigator.mediaDevices
     .getUserMedia({
-      audio: isAudioEnabledForDebug, // false,
+      audio: false, // true
       video: {
         width: {
           min: 180,
@@ -286,6 +315,258 @@ export const getLocalStream = () => {
       console.log(error.message);
     });
 };
+
+// A device is an endpoint connecting to a Router on the
+// server side to send/recive media
+const createDevice = async () => {
+  try {
+    device = new mediasoupClient.Device();
+
+    // https://mediasoup.org/documentation/v3/mediasoup-client/api/#device-load
+    // Loads the device with RTP capabilities of the Router (server side)
+    await device.load({
+      // see getRtpCapabilities() below
+      routerRtpCapabilities: rtpCapabilities,
+    });
+
+    // console.log("Device RTP Capabilities", device.rtpCapabilities);
+
+    // once the device loads, create transport
+    createSendTransport();
+  } catch (error) {
+    console.log(error);
+    if (error.name === "UnsupportedError")
+      console.warn("browser not supported");
+  }
+};
+
+const createSendTransport = () => {
+  // see server's socket.on('createWebRtcTransport', sender?, ...)
+  // this is a call from Producer, so sender = true
+  socket.emit("createWebRtcTransport", { consumer: false }, ({ params }) => {
+    // The server sends back params needed
+    // to create Send Transport on the client side
+    if (params.error) {
+      console.log(params.error);
+      return;
+    }
+
+    // creates a new WebRTC Transport to send media
+    // based on the server's producer transport params
+    // https://mediasoup.org/documentation/v3/mediasoup-client/api/#TransportOptions
+    producerTransport = device.createSendTransport(params);
+
+    // https://mediasoup.org/documentation/v3/communication-between-client-and-server/#producing-media
+    // this event is raised when a first call to transport.produce() is made
+    // see connectSendTransport() below
+    producerTransport.on(
+      "connect",
+      async ({ dtlsParameters }, callback, errback) => {
+        try {
+          // Signal local DTLS parameters to the server side transport
+          // see server's socket.on('transport-connect', ...)
+          socket.emit("transport-connect", {
+            dtlsParameters,
+          });
+
+          // Tell the transport that parameters were transmitted.
+          callback();
+        } catch (error) {
+          errback(error);
+        }
+      }
+    );
+
+    producerTransport.on("produce", async (parameters, callback, errback) => {
+      // console.log(parameters);
+
+      try {
+        // tell the server to create a Producer
+        // with the following parameters and produce
+        // and expect back a server side producer id
+        // see server's socket.on('transport-produce', ...)
+        socket.emit(
+          "transport-produce",
+          {
+            kind: parameters.kind,
+            rtpParameters: parameters.rtpParameters,
+            appData: parameters.appData,
+          },
+          ({ id, producersExist }) => {
+            // Tell the transport that parameters were transmitted and provide it with the
+            // server side producer's id.
+            callback({ id });
+
+            // if producers exist, then join room
+            if (producersExist) getProducers();
+          }
+        );
+      } catch (error) {
+        errback(error);
+      }
+    });
+
+    connectSendTransport();
+  });
+};
+
+const connectSendTransport = async () => {
+  // we now call produce() to instruct the producer transport
+  // to send media to the Router
+  // https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
+  // this action will trigger the 'connect' and 'produce' events above
+
+  // audioProducer = await producerTransport.produce(audioParams);
+  videoProducer = await producerTransport.produce(videoParams);
+
+  // audioProducer.on("trackended", () => {
+  //   console.log("audio track ended");
+
+  //   // close audio track
+  // });
+
+  // audioProducer.on("transportclose", () => {
+  //   console.log("audio transport ended");
+
+  //   // close audio track
+  // });
+
+  videoProducer.on("trackended", () => {
+    console.log("video track ended");
+
+    // close video track
+  });
+
+  videoProducer.on("transportclose", () => {
+    console.log("video transport ended");
+
+    // close video track
+  });
+};
+
+const signalNewConsumerTransport = async (remoteProducerId) => {
+  //check if we are already consuming the remoteProducerId
+  if (consumingTransports.includes(remoteProducerId)) return;
+  consumingTransports.push(remoteProducerId);
+
+  socket.emit("createWebRtcTransport", { consumer: true }, ({ params }) => {
+    // The server sends back params needed
+    // to create Send Transport on the client side
+    // console.log(`PARAMS... ${params}`);
+    if (params.error) {
+      console.log(params.error);
+      return;
+    }
+
+    let consumerTransport;
+    try {
+      consumerTransport = device.createRecvTransport(params);
+    } catch (error) {
+      // exceptions:
+      // {InvalidStateError} if not loaded
+      // {TypeError} if wrong arguments.
+      console.log(error);
+      return;
+    }
+
+    consumerTransport.on(
+      "connect",
+      async ({ dtlsParameters }, callback, errback) => {
+        try {
+          // Signal local DTLS parameters to the server side transport
+          // see server's socket.on('transport-recv-connect', ...)
+          socket.emit("transport-recv-connect", {
+            dtlsParameters,
+            serverConsumerTransportId: params.id,
+          });
+
+          // Tell the transport that parameters were transmitted.
+          callback();
+        } catch (error) {
+          // Tell the transport that something was wrong
+          errback(error);
+        }
+      }
+    );
+
+    connectRecvTransport(consumerTransport, remoteProducerId, params.id);
+  });
+};
+
+// server informs the client of a new producer just joined
+socket.on("new-producer", ({ producerId }) =>
+  signalNewConsumerTransport(producerId)
+);
+
+const getProducers = () => {
+  socket.emit("getProducers", (producerIds) => {
+    // console.log(producerIds);
+    // for each of the producer create a consumer
+    // producerIds.forEach(id => signalNewConsumerTransport(id))
+    producerIds.forEach(signalNewConsumerTransport);
+  });
+};
+
+const connectRecvTransport = async (
+  consumerTransport,
+  remoteProducerId,
+  serverConsumerTransportId
+) => {
+  // for consumer, we need to tell the server first
+  // to create a consumer based on the rtpCapabilities and consume
+  // if the router can consume, it will send back a set of params as below
+  socket.emit(
+    "consume",
+    {
+      rtpCapabilities: device.rtpCapabilities,
+      remoteProducerId,
+      serverConsumerTransportId,
+    },
+    async ({ params }) => {
+      if (params.error) {
+        console.log("Cannot Consume");
+        return;
+      }
+
+      // console.log(`Consumer Params ${params}`);
+      // then consume with the local consumer transport
+      // which creates a consumer
+      const consumer = await consumerTransport.consume({
+        id: params.id,
+        producerId: params.producerId,
+        kind: params.kind,
+        rtpParameters: params.rtpParameters,
+      });
+
+      consumerTransports = [
+        ...consumerTransports,
+        {
+          consumerTransport,
+          serverConsumerTransportId: params.id,
+          producerId: remoteProducerId,
+          consumer,
+        },
+      ];
+
+      // create a new div element for the new consumer media
+      // destructure and retrieve the video track from the producer
+      const { track } = consumer;
+      createVideoDiv(remoteProducerId, new MediaStream([track]));
+
+      // the server consumer started with media paused
+      // so we need to inform the server to resume
+      socket.emit("consumer-resume", {
+        serverConsumerId: params.serverConsumerId,
+      });
+    }
+  );
+};
+
+socket.on("producer-closed", ({ remoteProducerId }) => {
+  // server notification is received when a producer is closed
+  // we need to close the client-side consumer and associated transport
+  releaseVideoInfo(remoteProducerId);
+});
 
 export function handleCameraClick() {
   let playerId = socket.id;
@@ -316,23 +597,10 @@ export function handleMikeClick() {
   updateVideoStatus(playerId, isCameraOn, isMikeOn);
 }
 
-// async function handleCameaChange() {
-//   await getMedia(camearsSelect.value);
-//   if (sendPeer) {
-//     const videoTrack = myStream.getVideoTracks()[0];
-//     const videoSender = sendPeer
-//       .getSenders()
-//       .find((sender) => sender.track.kind === "video");
-
-//     videoSender.replaceTrack(videoTrack);
-//   }
-// }
-
 async function changeDevice(aElement, localName) {
   let curDeviceEl = document.getElementById(`${localName}DropdownDiv`);
   let deviceId = aElement.getAttribute("href");
-  console.log(localName);
-  console.log(deviceId);
+  console.log(`deviceId = ${deviceId} localName = ${localName}`);
 
   // 이미 해당 기기를 사용하고 있는 경우는 제외한다.
   if (curDeviceEl.innerText === aElement.innerHTML) return;
@@ -461,31 +729,3 @@ export async function getDevices(kind, localName) {
     console.log(e);
   }
 }
-
-// export async function getCameras() {
-//   try {
-//     // 카메라 리스트를 받고, 현재 카메라 이름을 보여준다.
-//     let cameras = getDevices("videoinput");
-//     let cameraDropdown = document.getElementById("cameraDropdown");
-//     let curCameraEl = document.getElementById("cameraDropdownDiv");
-//     let currentCamera = streams[socket.id].getVideoTracks()[0];
-
-//     cameraDropdown.innerHTML = "";
-//     curCameraEl.innerText = currentCamera.label;
-
-//     cameras.forEach((camera) => {
-//       const option = document.createElement("a");
-//       option.innerText = camera.label;
-//       option.setAttribute("href", camera.deviceId);
-//       option.addEventListener("click", (e) => {
-//         e.preventDefault();
-//         changeCamera(option);
-//       });
-//       cameraDropdown.appendChild(option);
-//     });
-
-//     console.log(cameras);
-//   } catch (e) {
-//     console.log(e);
-//   }
-// }

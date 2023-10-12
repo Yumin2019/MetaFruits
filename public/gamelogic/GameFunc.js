@@ -77,3 +77,15 @@ export function updateVideoStatus(playerId, cameraOn, mikeOn) {
     mikeOn ? "✔️" : "❌"
   }`;
 }
+
+export function colorPids(vol) {
+  const allPids = [...document.querySelectorAll(".pid")];
+  const numberOfPidsToColor = Math.round(vol / 10);
+  const pidsToColor = allPids.slice(0, numberOfPidsToColor);
+  for (const pid of allPids) {
+    pid.style.backgroundColor = "#e6e7e8";
+  }
+  for (const pid of pidsToColor) {
+    pid.style.backgroundColor = "#99d9ea";
+  }
+}

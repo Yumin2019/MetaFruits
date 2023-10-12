@@ -1,5 +1,5 @@
 import { divideMessage } from "../gameLogic/GameFunc.js";
-import { socket } from "../gameLogic/SocketLogic.js";
+import { exitRoom, joinRoom, socket } from "../gameLogic/SocketLogic.js";
 import Player from "../object/Player.js";
 import Phaser from "phaser";
 
@@ -266,7 +266,9 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.once(
           Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
           (cam, effect) => {
+            destScene === "HouseScene" ? joinRoom() : exitRoom();
             this.scene.start(destScene);
+
             // fix: 장면 전환후 회색화면이 표츌되는 이슈 수정
             setTimeout(() => {
               socket.emit("portal", portalData);

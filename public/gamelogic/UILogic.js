@@ -165,9 +165,10 @@ nameDialog.addEventListener("close", (event) => {
 });
 
 nameDialogOk.addEventListener("click", (event) => {
+  nameDialog.close();
+
   let name = nameDialogInput.value;
   if (name === game.global.name || name.length === 0) {
-    nameDialog.close();
     return;
   }
 
