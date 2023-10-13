@@ -177,19 +177,49 @@ let streams = {};
 let isCameraOn = true;
 let isMikeOn = true;
 
-function createVideoDiv(id, stream) {
+function addVoiceRecognition(audioStream, videoDiv, id) {
+  try {
+    // 음성 볼륨 인식
+    if (audioStream.getAudioTracks().length > 0) {
+      let audioContext = new AudioContext();
+      let analyser = audioContext.createAnalyser();
+      let microphone = audioContext.createMediaStreamSource(audioStream);
+      let javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+      analyser.smoothingTimeConstant = 0.8;
+      analyser.fftSize = 1024;
+
+      microphone.connect(analyser);
+      analyser.connect(javascriptNode);
+      javascriptNode.connect(audioContext.destination);
+      javascriptNode.onaudioprocess = function () {
+        const array = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(array);
+
+        const arraySum = array.reduce((a, value) => a + value, 0);
+        const average = Math.round(arraySum / array.length);
+
+        videoDiv.style.border = `4px solid ${
+          average > 10 ? "#99d9ea" : "#9f9f9f"
+        }`;
+        if (socket.id === id && mikeTest) colorPids(average);
+      };
+    }
+  } catch (error) {}
+}
+
+function createMyVideoDiv(id, stream) {
   let videoDiv = document.createElement("div");
   videoDiv.setAttribute("class", "video-div");
   videoDiv.setAttribute("id", `video-div-${id}`);
 
   // ID는 video-div-${id}, vidoe-${id}, video-status-${id}, video-cover-${id}로 관리한다.
   videoDiv.innerHTML =
-    '<video id="' +
-    `video-${id}` +
-    '" class="video" autoplay></video>' +
     '<div id="' +
     `video-cover-${id}` +
     '"class="video-cover" style="display: none;">카메라 OFF</div>' +
+    '<video id="' +
+    `video-${id}` +
+    '" class="video" autoplay></video>' +
     '<div id="' +
     `video-status-${id}` +
     '" class="video-status">cam: ✔️ mike: ✔️</div>';
@@ -198,35 +228,11 @@ function createVideoDiv(id, stream) {
   let videoParent = document.getElementById("video-parent-content");
   videoParent.appendChild(videoDiv);
 
+  // 스트림 정보를 추가한다.
   let video = document.getElementById(`video-${id}`);
   video.srcObject = stream;
 
-  // 음성 볼륨 인식
-  if (stream.getAudioTracks().length > 0) {
-    let audioContext = new AudioContext();
-    let analyser = audioContext.createAnalyser();
-    let microphone = audioContext.createMediaStreamSource(stream);
-    let javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-    analyser.smoothingTimeConstant = 0.8;
-    analyser.fftSize = 1024;
-
-    microphone.connect(analyser);
-    analyser.connect(javascriptNode);
-    javascriptNode.connect(audioContext.destination);
-    javascriptNode.onaudioprocess = function () {
-      const array = new Uint8Array(analyser.frequencyBinCount);
-      analyser.getByteFrequencyData(array);
-
-      const arraySum = array.reduce((a, value) => a + value, 0);
-      const average = Math.round(arraySum / array.length);
-
-      videoDiv.style.border = `4px solid ${
-        average > 10 ? "#99d9ea" : "#9f9f9f"
-      }`;
-      if (socket.id === id && mikeTest) colorPids(average);
-    };
-  }
-
+  addVoiceRecognition(stream, videoDiv, id);
   return videoDiv;
 }
 
@@ -237,7 +243,7 @@ const streamSuccess = async (stream) => {
 
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
-  createVideoDiv(socket.id, stream);
+  createMyVideoDiv(socket.id, stream);
 
   // speaker 기본값으로 설정
   let devices = await getDevicesByKind("audiooutput");
@@ -272,6 +278,7 @@ export const exitRoom = () => {
 };
 
 function releaseVideoInfo(remoteProducerId) {
+  // remoteProducerId를 소비하고 있던 경우를 찾는다.
   const producerToClose = consumerTransports.find(
     (transportData) => transportData.producerId === remoteProducerId
   );
@@ -289,10 +296,17 @@ function releaseVideoInfo(remoteProducerId) {
     (producerId) => producerId !== remoteProducerId
   );
 
-  // remove the video div element
-  let child = document.getElementById(`video-div-${remoteProducerId}`);
+  // 프로듀서의 소켓 아이디를 통해 해당 유저의 video와 audio를 정리한다.
   let parent = document.getElementById("video-parent-content");
-  parent.removeChild(child);
+  let videoDiv = document.getElementById(
+    `video-div-${producerToClose.producerSocketId}`
+  );
+  let audioDiv = document.getElementById(
+    `audio-div-${producerToClose.producerSocketId}`
+  );
+
+  if (videoDiv) parent.removeChild(videoDiv);
+  if (audioDiv) parent.removeChild(audioDiv);
 }
 
 export const getLocalStream = () => {
@@ -494,9 +508,9 @@ const signalNewConsumerTransport = async (remoteProducerId) => {
 };
 
 // server informs the client of a new producer just joined
-socket.on("new-producer", ({ producerId }) =>
-  signalNewConsumerTransport(producerId)
-);
+socket.on("new-producer", ({ producerId }) => {
+  signalNewConsumerTransport(producerId);
+});
 
 const getProducers = () => {
   socket.emit("getProducers", (producerIds) => {
@@ -545,13 +559,55 @@ const connectRecvTransport = async (
           serverConsumerTransportId: params.id,
           producerId: remoteProducerId,
           consumer,
+          producerSocketId: params.producerSocketId, // 삭제를 위해 데이터를 저장한다.
         },
       ];
 
-      // create a new div element for the new consumer media
       // destructure and retrieve the video track from the producer
       const { track } = consumer;
-      createVideoDiv(remoteProducerId, new MediaStream([track]));
+      let stream = new MediaStream([track]);
+
+      // 비디오 트랙과 오디오 트랙을 분리하여 처리한다. (따로따로 producer 처리가 된다.)
+      // params.producerSocketId 값으로 비디오와 음성에 해당하는 div를 하나 만든다.
+      // 그리고 이 값을 이용하여 비디오도 설정하고 마이크 처리(음성 인식 추가)에도 사용한다.
+      let videoParent = document.getElementById("video-parent-content");
+      let videoDiv = document.getElementById(
+        `video-div-${params.producerSocketId}`
+      );
+      if (!videoDiv) {
+        videoDiv = document.createElement("div");
+        videoDiv.setAttribute("class", "video-div");
+        videoDiv.setAttribute("id", `video-div-${params.producerSocketId}`);
+        videoParent.append(videoDiv);
+      }
+
+      // 오디오는 div 씌워서 추가(안 보여서 상관없음), video는 다른 것까지 묶어서 추가한다.
+      if (params.kind == "audio") {
+        let audioDiv = document.createElement("div");
+        audioDiv.setAttribute("id", `audio-div-${params.producerSocketId}`);
+        audioDiv.innerHTML =
+          '<audio id="' + remoteProducerId + '" autoplay></audio>';
+        videoParent.append(audioDiv);
+      } else {
+        videoDiv.innerHTML =
+          '<div id="' +
+          `video-cover-${remoteProducerId}` +
+          '"class="video-cover" style="display: none;">카메라 OFF</div>' +
+          '<video id="' +
+          remoteProducerId +
+          '" class="video" autoplay></video>' +
+          '<div id="' +
+          `video-status-${remoteProducerId}` +
+          '" class="video-status">cam: ✔️ mike: ✔️</div>';
+      }
+
+      // 오디오와 비디오에 스트림을 추가한다.
+      document.getElementById(remoteProducerId).srcObject = stream;
+
+      // 오디오의 경우 음성 인식 처리를 추가한다.
+      if (params.kind === "audio") {
+        addVoiceRecognition(stream, videoDiv, remoteProducerId);
+      }
 
       // the server consumer started with media paused
       // so we need to inform the server to resume

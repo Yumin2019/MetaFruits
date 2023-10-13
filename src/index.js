@@ -11,7 +11,7 @@ let worker;
 let rooms = {}; // { roomName1: { Router, peers: [ socketId1, ... ] }, ...}
 let peers = {}; // { socketId1: { roomName1, socket, transports = [id1, id2,], producers = [id1, id2,], consumers = [id1, id2,], peerDetails }, ...}
 let transports = []; // [ { socketId1, roomName1, transport, consumer }, ... ]
-let producers = []; // [ { socketId1, roomName1, producer, }, ... ]
+let producers = []; // [ { socketId1, roomName1, producer, }, ... ] 어떤 방에 어떤 소켓에 대한 프로듀서가 있다. (오디오, 비디오 따로)
 let consumers = []; // [ { socketId1, roomName1, consumer, }, ... ]
 
 const createWorker = async () => {
@@ -168,7 +168,6 @@ io.on("connection", (socket) => {
     console.log("joinRoom");
     // create Router if it does not exist
     const router = await addPeerToRoom(roomName, socket.id);
-
     peers[socket.id] = {
       socket,
       roomName, // Name for the Router this Peer joined
@@ -374,6 +373,11 @@ io.on("connection", (socket) => {
             transportData.transport.id == serverConsumerTransportId
         ).transport;
 
+        // 프로듀서의 소켓 ID를 구해서 클라에게 params로 넘긴다.
+        let producerSocketId = producers.find(
+          (producerData) => producerData.producer.id === remoteProducerId
+        ).socketId;
+
         // check if the router can consume the specified producer
         if (
           router.canConsume({
@@ -417,6 +421,7 @@ io.on("connection", (socket) => {
             kind: consumer.kind,
             rtpParameters: consumer.rtpParameters,
             serverConsumerId: consumer.id,
+            producerSocketId,
           };
 
           // send the parameters to the client
