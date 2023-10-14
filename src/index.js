@@ -258,6 +258,20 @@ io.on("connection", (socket) => {
     };
   };
 
+  socket.on("updateVideoStatus", (data) => {
+    // 회의방에 입장하지 않은 경우 제외
+    if (!peers[socket.id]) return;
+
+    const roomName = peers[socket.id].roomName;
+    peers[socket.id].videoStatus = data;
+
+    socket.to(roomName).emit("updateVideoStatus", {
+      playerId: socket.id,
+      camera: data.camera,
+      mike: data.mike,
+    });
+  });
+
   socket.on("getProducers", (callback) => {
     //return all producer transports
     const { roomName } = peers[socket.id];

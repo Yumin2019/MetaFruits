@@ -133,6 +133,10 @@ socket.on("toast", (data) => {
   }
 });
 
+socket.on("updateVideoStatus", ({ playerId, camera, mike }) => {
+  if (playerId !== socket.id) updateVideoStatus(playerId, camera, mike);
+});
+
 // ================= 미디어수프 코드 =================
 
 // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerOptions
@@ -268,7 +272,7 @@ function createOtherVideoDiv(id, cameraStaus, mikeStatus) {
     `<div id="video-cover-${id}" class="video-cover" style="display: ${
       cameraStaus ? "none" : "block"
     };">카메라 OFF</div>` +
-    // Video, Audio(block 처리를 한 이유는 다른 유저의 뷰에서만 동시에 뷰에 존재하면 문제가 생긴다. )
+    // Video, Audio
     `<video id="video-${id}" class="video" style="display: ${
       !cameraStaus ? "none" : "block"
     }"; autoplay></video>` +
@@ -646,16 +650,11 @@ export function handleCameraClick() {
     track.enabled = !track.enabled;
   });
 
-  // 카메라 On/Off에 따른 커버 처리
-  let vidoeCoverEl = document.getElementById(`video-cover-${playerId}`);
-  let videoEl = document.getElementById(`video-${playerId}`);
   isCameraOn = !isCameraOn;
-
-  showElement(isCameraOn ? videoEl : vidoeCoverEl);
-  hideElement(isCameraOn ? vidoeCoverEl : videoEl);
-
-  // 하단에 상태도 갱신한다.
   updateVideoStatus(playerId, isCameraOn, isMikeOn);
+
+  // 서버로 상태 정보를 보낸다.
+  socket.emit("updateVideoStatus", { camera: isCameraOn, mike: isMikeOn });
 }
 
 export function handleMikeClick() {
@@ -669,6 +668,9 @@ export function handleMikeClick() {
 
   isMikeOn = !isMikeOn;
   updateVideoStatus(playerId, isCameraOn, isMikeOn);
+
+  // 서버로 상태 정보를 보낸다.
+  socket.emit("updateVideoStatus", { camera: isCameraOn, mike: isMikeOn });
 }
 
 async function changeDevice(aElement, localName) {

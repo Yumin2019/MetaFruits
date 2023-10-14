@@ -1,5 +1,4 @@
 import GameScene from "../scene/GameScene.js";
-import { socket } from "./SocketLogic.js";
 import { characterButton, chattingList, nameButton } from "./UILogic.js";
 
 // 메시지가 너무 긴 경우 잘라서 처리한다.
@@ -73,12 +72,16 @@ export function showElement(el) {
 }
 
 export function updateVideoStatus(playerId, cameraOn, mikeOn) {
-  socket.emit("updateVideoStatus", { playerId, cameraOn, mikeOn });
-
   let videoStatus = document.getElementById(`video-status-${playerId}`);
   videoStatus.innerText = `cam: ${cameraOn ? "✔️" : "❌"} mike: ${
     mikeOn ? "✔️" : "❌"
   }`;
+
+  let vidoeCoverEl = document.getElementById(`video-cover-${playerId}`);
+  let videoEl = document.getElementById(`video-${playerId}`);
+
+  showElement(cameraOn ? videoEl : vidoeCoverEl);
+  hideElement(cameraOn ? vidoeCoverEl : videoEl);
 }
 
 export function colorPids(vol) {
