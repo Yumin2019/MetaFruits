@@ -1,3 +1,4 @@
+import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
 import PhaserMatterCollisionPlugin from "phaser-matter-collision-plugin";
@@ -17,10 +18,11 @@ const config = {
   physics: {
     default: "matter",
     matter: {
-      debug: {
-        showBody: true,
-        showStaticBody: true,
-      },
+      debug: false,
+      // debug: {
+      //   showBody: true,
+      //   showStaticBody: true,
+      // },
       gravity: { y: 0 },
     },
   },
@@ -45,6 +47,10 @@ game.global = {
   allChattingList: [],
   roomChattingList: [],
 };
+
+export function playButtonEffect() {
+  GameScene.playButtonEffect(getCurScene());
+}
 
 export function getCurScene() {
   return game.scene.getScenes()[0];

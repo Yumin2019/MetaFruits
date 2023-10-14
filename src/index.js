@@ -182,7 +182,7 @@ io.on("connection", (socket) => {
 
     // get Router RTP Capabilities
     const rtpCapabilities = router.rtpCapabilities;
-    console.log(rtpCapabilities);
+    // console.log(rtpCapabilities);
 
     // 방에 존재하는 유저의 id와 비디오 상태 정보를 보낸다.
     let videoStatusList = [];
@@ -340,7 +340,7 @@ io.on("connection", (socket) => {
 
   // see client's socket.emit('transport-connect', ...)
   socket.on("transport-connect", ({ dtlsParameters }) => {
-    console.log("DTLS PARAMS... ", { dtlsParameters });
+    // console.log("DTLS PARAMS... ", { dtlsParameters });
 
     getTransport(socket.id).connect({ dtlsParameters });
   });
@@ -381,7 +381,7 @@ io.on("connection", (socket) => {
   socket.on(
     "transport-recv-connect",
     async ({ dtlsParameters, serverConsumerTransportId }) => {
-      console.log(`DTLS PARAMS: ${dtlsParameters}`);
+      // console.log(`DTLS PARAMS: ${dtlsParameters}`);
       const consumerTransport = transports.find(
         (transportData) =>
           transportData.consumer &&

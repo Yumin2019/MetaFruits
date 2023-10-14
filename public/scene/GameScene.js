@@ -6,7 +6,7 @@ import Phaser from "phaser";
 export default class GameScene extends Phaser.Scene {
   constructor(data) {
     // sceneName: Phaser Scene 변수, mapName: map json 이름
-    const { sceneName, mapName } = data;
+    const { sceneName, mapName, musicPath } = data;
     super({
       key: sceneName,
     });
@@ -15,6 +15,7 @@ export default class GameScene extends Phaser.Scene {
     this.mapName = mapName;
     this.initialized = false;
     this.otherPlayers = {};
+    this.musicPath = musicPath;
   }
 
   // function eventQueue after initialization of GameScene
@@ -29,6 +30,29 @@ export default class GameScene extends Phaser.Scene {
     this.load.image("house1", "../assets/house1.png");
     this.load.image("house2", "../assets/house2.png");
     this.load.tilemapTiledJSON(this.mapName, `../assets/${this.mapName}.json`);
+
+    this.load.audio("door", ["assets/door.mp3"]);
+    this.load.audio("button", ["assets/button.mp3"]);
+    this.load.audio(this.musicPath, [this.musicPath]);
+  }
+
+  create() {
+    this.playerCollisionGroup = this.matter.world.nextGroup(true);
+    GameScene.eventQueue.forEach((func) => {
+      func();
+    });
+    GameScene.eventQueue = [];
+
+    // 배경음악 시작 및 음악 로드
+    this.music = this.sound.add(this.musicPath, { loop: true, volume: 0.4 });
+    this.door = this.sound.add("door", { loop: false, volume: 0.5 });
+    this.button = this.sound.add("button", { loop: false, volume: 0.5 });
+
+    this.music.play();
+  }
+
+  static playButtonEffect(scene) {
+    scene.button.play();
   }
 
   static setName(scene, name) {
@@ -124,14 +148,6 @@ export default class GameScene extends Phaser.Scene {
       .setDepth(100)
       .setVisible(false)
       .setActive(false);
-  }
-
-  create() {
-    this.playerCollisionGroup = this.matter.world.nextGroup(true);
-    GameScene.eventQueue.forEach((func) => {
-      func();
-    });
-    GameScene.eventQueue = [];
   }
 
   updateTextInfo() {
@@ -260,6 +276,9 @@ export default class GameScene extends Phaser.Scene {
         pair.bodyA.label === "playerSensor" ||
         pair.bodyB.label === "playerSensor"
       ) {
+        this.music.stop();
+        this.door.play();
+
         // 충돌시 장면 전환(Fade 효과)
         this.initialized = false;
         this.cameras.main.fadeOut(250, 200, 200, 200);

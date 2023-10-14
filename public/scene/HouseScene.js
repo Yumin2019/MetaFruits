@@ -2,7 +2,11 @@ import GameScene from "./GameScene.js";
 
 export default class HouseScene extends GameScene {
   constructor() {
-    super({ sceneName: "HouseScene", mapName: "house_map" });
+    super({
+      sceneName: "HouseScene",
+      mapName: "house_map",
+      musicPath: "../assets/background2.mp3",
+    });
   }
 
   create() {

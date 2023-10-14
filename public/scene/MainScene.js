@@ -2,7 +2,11 @@ import GameScene from "./GameScene.js";
 
 export default class MainScene extends GameScene {
   constructor() {
-    super({ sceneName: "MainScene", mapName: "main_map" });
+    super({
+      sceneName: "MainScene",
+      mapName: "main_map",
+      musicPath: "../assets/background1.mp3",
+    });
   }
 
   create() {
@@ -11,7 +15,7 @@ export default class MainScene extends GameScene {
       portalName: "portal1",
       destScene: "HouseScene",
       x: 398,
-      y: 185,
+      y: 195,
       width: 32,
       height: 32,
       data: { spawnPosX: 225, spawnPosY: 970 },
@@ -21,7 +25,7 @@ export default class MainScene extends GameScene {
       portalName: "portal2",
       destScene: "HouseScene",
       x: 593,
-      y: 185,
+      y: 195,
       width: 32,
       height: 32,
       data: { spawnPosX: 800, spawnPosY: 970 },

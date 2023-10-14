@@ -1,5 +1,5 @@
 import GameScene from "../scene/GameScene.js";
-import { game, getCurScene } from "../index.js";
+import { game, getCurScene, playButtonEffect } from "../index.js";
 import { addChatting, setChattingList } from "./GameFunc.js";
 import {
   getDevices,
@@ -64,11 +64,13 @@ chattingInput.addEventListener("focusout", (event) => {
 
 // 채팅 On/Off
 chattingOpen.addEventListener("click", (event) => {
+  playButtonEffect();
   chattingContainer.style.display = "block";
   chattingOpen.style.display = "none";
 });
 
 chattingClose.addEventListener("click", (event) => {
+  playButtonEffect();
   chattingContainer.style.display = "none";
   chattingOpen.style.display = "block";
 });
@@ -101,6 +103,8 @@ chattingInput.addEventListener("keyup", (event) => {
 
 chattingChannel.addEventListener("click", (event) => {
   event.preventDefault();
+  playButtonEffect();
+
   let sceneName = getCurScene().sceneName;
   if (sceneName === "MainScene") return;
 
@@ -116,6 +120,8 @@ chattingChannel.addEventListener("click", (event) => {
 });
 
 characterButton.addEventListener("click", (event) => {
+  playButtonEffect();
+
   switch (game.global.character) {
     case "apple":
       characterButton.innerHTML = "🍓";
@@ -155,6 +161,7 @@ characterButton.addEventListener("click", (event) => {
 });
 
 nameButton.addEventListener("click", (event) => {
+  playButtonEffect();
   nameDialog.open ? nameDialog.close() : nameDialog.show();
   game.input.keyboard.enabled = !nameDialog.open;
   if (nameDialog.open) nameDialogInput.value = game.global.name;
@@ -165,6 +172,7 @@ nameDialog.addEventListener("close", (event) => {
 });
 
 nameDialogOk.addEventListener("click", (event) => {
+  playButtonEffect();
   nameDialog.close();
 
   let name = nameDialogInput.value;
@@ -189,24 +197,30 @@ nameDialogOk.addEventListener("click", (event) => {
 });
 
 nameDialogClose.addEventListener("click", (event) => {
+  playButtonEffect();
   nameDialog.close();
 });
 
 deviceDialog.addEventListener("close", (event) => {
+  playButtonEffect();
   game.input.keyboard.enabled = true;
   mikeTest = false;
   updateMikeCheck();
 });
 
 deviceDialogOk.addEventListener("click", (event) => {
+  playButtonEffect();
   deviceDialog.close();
 });
 
 deviceDialogClose.addEventListener("click", (event) => {
+  playButtonEffect();
   deviceDialog.close();
 });
 
 cameraButton.addEventListener("click", (event) => {
+  playButtonEffect();
+
   // 카메라 온오프, 상태 표시
   if (cameraStatus.style.display === "block") {
     cameraStatus.style.display = "none";
@@ -218,6 +232,8 @@ cameraButton.addEventListener("click", (event) => {
 });
 
 mikeButton.addEventListener("click", (event) => {
+  playButtonEffect();
+
   // 마이크 온오프, 상태 표시
   if (mikeStatus.style.display === "block") {
     mikeStatus.style.display = "none";
@@ -229,6 +245,8 @@ mikeButton.addEventListener("click", (event) => {
 });
 
 settingButton.addEventListener("click", (event) => {
+  playButtonEffect();
+
   deviceDialog.open ? deviceDialog.close() : deviceDialog.show();
   game.input.keyboard.enabled = !deviceDialog.open;
 
@@ -240,18 +258,22 @@ settingButton.addEventListener("click", (event) => {
 });
 
 minimapButton.addEventListener("click", (event) => {
+  playButtonEffect();
   GameScene.toggleMinimap(getCurScene());
 });
 
 cameraDropdownDiv.addEventListener("click", (event) => {
+  playButtonEffect();
   cameraDropdown.classList.toggle("show");
 });
 
 mikeDropdownDiv.addEventListener("click", (event) => {
+  playButtonEffect();
   mikeDropdown.classList.toggle("show");
 });
 
 speakerDropdownDiv.addEventListener("click", (event) => {
+  playButtonEffect();
   speakerDropdown.classList.toggle("show");
 });
 
@@ -271,6 +293,7 @@ function updateMikeCheck() {
 
 // 마이크 테스트 on/off
 mikeTestButton.addEventListener("click", (event) => {
+  playButtonEffect();
   mikeTest = !mikeTest;
   updateMikeCheck();
 });
