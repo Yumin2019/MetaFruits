@@ -164,7 +164,7 @@ io.on("connection", (socket) => {
     return router;
   };
 
-  socket.on("joinRoom", async ({ roomName }, callback) => {
+  socket.on("joinRoom", async ({ roomName, mike, camera }, callback) => {
     console.log("joinRoom");
     // create Router if it does not exist
     const router = await addPeerToRoom(roomName, socket.id);
@@ -175,8 +175,8 @@ io.on("connection", (socket) => {
       producers: [],
       consumers: [],
       videoStatus: {
-        mike: true,
-        camera: true,
+        camera,
+        mike,
       },
     };
 
@@ -292,6 +292,8 @@ io.on("connection", (socket) => {
       otherSocket.emit("new-producer", {
         producerId,
         producerSocketId: socketId,
+        camera: peers[socketId].videoStatus.camera,
+        mike: peers[socketId].videoStatus.mike,
       });
     });
   };

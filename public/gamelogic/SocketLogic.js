@@ -230,25 +230,29 @@ const streamSuccess = async (stream) => {
 };
 
 export const joinRoom = () => {
-  socket.emit("joinRoom", { roomName: "HouseScene" }, (data) => {
-    // console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
-    // we assign to local variable and will be used when
-    // loading the client Device (see createDevice above)
-    rtpCapabilities = data.rtpCapabilities;
-    // once we have rtpCapabilities from the Router, create Device
-    createDevice();
+  socket.emit(
+    "joinRoom",
+    { roomName: "HouseScene", mike: isMikeOn, camera: isCameraOn },
+    (data) => {
+      // console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
+      // we assign to local variable and will be used when
+      // loading the client Device (see createDevice above)
+      rtpCapabilities = data.rtpCapabilities;
+      // once we have rtpCapabilities from the Router, create Device
+      createDevice();
 
-    // 유저에서 넘겨준 정보를 토대로 미리 비디오 뷰를 생성한다.
-    data.videoStatusList.forEach((statusInfo) => {
-      if (statusInfo.playerId !== socket.id) {
-        createOtherVideoDiv(
-          statusInfo.playerId,
-          statusInfo.videoStatus.camera,
-          statusInfo.videoStatus.mike
-        );
-      }
-    });
-  });
+      // 유저에서 넘겨준 정보를 토대로 미리 비디오 뷰를 생성한다.
+      data.videoStatusList.forEach((statusInfo) => {
+        if (statusInfo.playerId !== socket.id) {
+          createOtherVideoDiv(
+            statusInfo.playerId,
+            statusInfo.videoStatus.camera,
+            statusInfo.videoStatus.mike
+          );
+        }
+      });
+    }
+  );
 };
 
 function createOtherVideoDiv(id, cameraStaus, mikeStatus) {
@@ -264,8 +268,10 @@ function createOtherVideoDiv(id, cameraStaus, mikeStatus) {
     `<div id="video-cover-${id}" class="video-cover" style="display: ${
       cameraStaus ? "none" : "block"
     };">카메라 OFF</div>` +
-    // Video, Audio
-    `<video id="video-${id}" class="video" autoplay></video>` +
+    // Video, Audio(block 처리를 한 이유는 다른 유저의 뷰에서만 동시에 뷰에 존재하면 문제가 생긴다. )
+    `<video id="video-${id}" class="video" style="display: ${
+      !cameraStaus ? "none" : "block"
+    }"; autoplay></video>` +
     `<audio id="audio-${id}" autoplay></audio>` +
     // Video Status
     `<div id="video-status-${id}" class="video-status">` +
@@ -542,11 +548,11 @@ const signalNewConsumerTransport = async (remoteProducerId) => {
 };
 
 // server informs the client of a new producer just joined
-socket.on("new-producer", ({ producerId, producerSocketId }) => {
+socket.on("new-producer", ({ producerId, producerSocketId, camera, mike }) => {
   signalNewConsumerTransport(producerId);
 
   // 다른 유저의 비디오뷰를 생성한다.
-  createOtherVideoDiv(producerSocketId, true, true);
+  createOtherVideoDiv(producerSocketId, camera, mike);
 });
 
 const getProducers = () => {
@@ -634,6 +640,8 @@ socket.on("producer-closed", ({ remoteProducerId }) => {
 
 export function handleCameraClick() {
   let playerId = socket.id;
+  if (!streams[playerId]) return;
+
   streams[playerId].getVideoTracks().forEach((track) => {
     track.enabled = !track.enabled;
   });
@@ -652,6 +660,8 @@ export function handleCameraClick() {
 
 export function handleMikeClick() {
   let playerId = socket.id;
+  if (!streams[playerId]) return;
+
   streams[playerId].getAudioTracks().forEach((track) => {
     console.log(track);
     track.enabled = !track.enabled;
