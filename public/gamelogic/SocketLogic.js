@@ -203,37 +203,13 @@ function addVoiceRecognition(audioStream, videoDiv, id) {
         }`;
         if (socket.id === id && mikeTest) colorPids(average);
       };
+
+      // javascriptNode.disconnect();
+      // analyser.disconnect();
+      // microphone.disconnect();
+      // audioContext.close();
     }
   } catch (error) {}
-}
-
-function createMyVideoDiv(id, stream) {
-  let videoDiv = document.createElement("div");
-  videoDiv.setAttribute("class", "video-div");
-  videoDiv.setAttribute("id", `video-div-${id}`);
-
-  // ID는 video-div-${id}, vidoe-${id}, video-status-${id}, video-cover-${id}로 관리한다.
-  videoDiv.innerHTML =
-    '<div id="' +
-    `video-cover-${id}` +
-    '"class="video-cover" style="display: none;">카메라 OFF</div>' +
-    '<video id="' +
-    `video-${id}` +
-    '" class="video" autoplay></video>' +
-    '<div id="' +
-    `video-status-${id}` +
-    '" class="video-status">cam: ✔️ mike: ✔️</div>';
-
-  // video parent list에 추가 한다.
-  let videoParent = document.getElementById("video-parent-content");
-  videoParent.appendChild(videoDiv);
-
-  // 스트림 정보를 추가한다.
-  let video = document.getElementById(`video-${id}`);
-  video.srcObject = stream;
-
-  addVoiceRecognition(stream, videoDiv, id);
-  return videoDiv;
 }
 
 const streamSuccess = async (stream) => {
@@ -261,8 +237,71 @@ export const joinRoom = () => {
     rtpCapabilities = data.rtpCapabilities;
     // once we have rtpCapabilities from the Router, create Device
     createDevice();
+
+    // 유저에서 넘겨준 정보를 토대로 미리 비디오 뷰를 생성한다.
+    data.videoStatusList.forEach((statusInfo) => {
+      if (statusInfo.playerId !== socket.id) {
+        createOtherVideoDiv(
+          statusInfo.playerId,
+          statusInfo.videoStatus.camera,
+          statusInfo.videoStatus.mike
+        );
+      }
+    });
   });
 };
+
+function createOtherVideoDiv(id, cameraStaus, mikeStatus) {
+  // 이미 뷰를 추가한 경우에는 처리하지 않는다.
+  if (document.getElementById(`video-div-${id}`)) return;
+
+  let videoDiv = document.createElement(`video-div-${id}`);
+  videoDiv.setAttribute("class", "video-div");
+  videoDiv.setAttribute("id", `video-div-${id}`);
+
+  videoDiv.innerHTML =
+    // video cover
+    `<div id="video-cover-${id}" class="video-cover" style="display: ${
+      cameraStaus ? "none" : "block"
+    };">카메라 OFF</div>` +
+    // Video, Audio
+    `<video id="video-${id}" class="video" autoplay></video>` +
+    `<audio id="audio-${id}" autoplay></audio>` +
+    // Video Status
+    `<div id="video-status-${id}" class="video-status">` +
+    `cam: ${cameraStaus ? "✔️" : "❌"} mike: ${mikeStatus ? "✔️" : "❌"}
+    </div>`;
+
+  // 비디오 리스트에 뷰를 추가한다. stream에 대한 처리는 produce 이벤트 이후에 진행
+  let videoParent = document.getElementById("video-parent-content");
+  videoParent.append(videoDiv);
+}
+
+function createMyVideoDiv(id, stream) {
+  let videoDiv = document.createElement("div");
+  videoDiv.setAttribute("class", "video-div");
+  videoDiv.setAttribute("id", `video-div-${id}`);
+
+  // ID는 video-div-${id}, vidoe-${id}, video-status-${id}, video-cover-${id}로 관리한다.
+  videoDiv.innerHTML =
+    // video-cover
+    `<div id="video-cover-${id}" class="video-cover" style="display: none;">카메라 OFF</div>` +
+    // video
+    `<video id="video-${id}" class="video" autoplay></video>` +
+    // video-status
+    `<div id="video-status-${id}" class="video-status">cam: ✔️ mike: ✔️</div>`;
+
+  // video parent list에 추가 한다.
+  let videoParent = document.getElementById("video-parent-content");
+  videoParent.appendChild(videoDiv);
+
+  // 스트림 정보를 추가한다.
+  let video = document.getElementById(`video-${id}`);
+  video.srcObject = stream;
+
+  addVoiceRecognition(stream, videoDiv, id);
+  return videoDiv;
+}
 
 export const exitRoom = () => {
   // 서버에서 리소스를 정리한다.
@@ -301,12 +340,7 @@ function releaseVideoInfo(remoteProducerId) {
   let videoDiv = document.getElementById(
     `video-div-${producerToClose.producerSocketId}`
   );
-  let audioDiv = document.getElementById(
-    `audio-div-${producerToClose.producerSocketId}`
-  );
-
   if (videoDiv) parent.removeChild(videoDiv);
-  if (audioDiv) parent.removeChild(audioDiv);
 }
 
 export const getLocalStream = () => {
@@ -508,8 +542,11 @@ const signalNewConsumerTransport = async (remoteProducerId) => {
 };
 
 // server informs the client of a new producer just joined
-socket.on("new-producer", ({ producerId }) => {
+socket.on("new-producer", ({ producerId, producerSocketId }) => {
   signalNewConsumerTransport(producerId);
+
+  // 다른 유저의 비디오뷰를 생성한다.
+  createOtherVideoDiv(producerSocketId, true, true);
 });
 
 const getProducers = () => {
@@ -566,47 +603,18 @@ const connectRecvTransport = async (
       // destructure and retrieve the video track from the producer
       const { track } = consumer;
       let stream = new MediaStream([track]);
+      let producerSocketId = params.producerSocketId;
 
       // 비디오 트랙과 오디오 트랙을 분리하여 처리한다. (따로따로 producer 처리가 된다.)
-      // params.producerSocketId 값으로 비디오와 음성에 해당하는 div를 하나 만든다.
-      // 그리고 이 값을 이용하여 비디오도 설정하고 마이크 처리(음성 인식 추가)에도 사용한다.
-      let videoParent = document.getElementById("video-parent-content");
-      let videoDiv = document.getElementById(
-        `video-div-${params.producerSocketId}`
-      );
-      if (!videoDiv) {
-        videoDiv = document.createElement("div");
-        videoDiv.setAttribute("class", "video-div");
-        videoDiv.setAttribute("id", `video-div-${params.producerSocketId}`);
-        videoParent.append(videoDiv);
-      }
+      // 미리 만들어둔 video, audio element에 stream 정보를 추가한다.
 
-      // 오디오는 div 씌워서 추가(안 보여서 상관없음), video는 다른 것까지 묶어서 추가한다.
-      if (params.kind == "audio") {
-        let audioDiv = document.createElement("div");
-        audioDiv.setAttribute("id", `audio-div-${params.producerSocketId}`);
-        audioDiv.innerHTML =
-          '<audio id="' + remoteProducerId + '" autoplay></audio>';
-        videoParent.append(audioDiv);
-      } else {
-        videoDiv.innerHTML =
-          '<div id="' +
-          `video-cover-${remoteProducerId}` +
-          '"class="video-cover" style="display: none;">카메라 OFF</div>' +
-          '<video id="' +
-          remoteProducerId +
-          '" class="video" autoplay></video>' +
-          '<div id="' +
-          `video-status-${remoteProducerId}` +
-          '" class="video-status">cam: ✔️ mike: ✔️</div>';
-      }
-
-      // 오디오와 비디오에 스트림을 추가한다.
-      document.getElementById(remoteProducerId).srcObject = stream;
-
-      // 오디오의 경우 음성 인식 처리를 추가한다.
       if (params.kind === "audio") {
-        addVoiceRecognition(stream, videoDiv, remoteProducerId);
+        // 오디오의 경우 음성 인식 처리도 추가한다.
+        let videoDiv = document.getElementById(`video-div-${producerSocketId}`);
+        document.getElementById("audio-" + producerSocketId).srcObject = stream;
+        addVoiceRecognition(stream, videoDiv, producerSocketId);
+      } else {
+        document.getElementById("video-" + producerSocketId).srcObject = stream;
       }
 
       // the server consumer started with media paused

@@ -174,8 +174,9 @@ io.on("connection", (socket) => {
       transports: [],
       producers: [],
       consumers: [],
-      peerDetails: {
-        name: "",
+      videoStatus: {
+        mike: true,
+        camera: true,
       },
     };
 
@@ -183,8 +184,17 @@ io.on("connection", (socket) => {
     const rtpCapabilities = router.rtpCapabilities;
     console.log(rtpCapabilities);
 
+    // 방에 존재하는 유저의 id와 비디오 상태 정보를 보낸다.
+    let videoStatusList = [];
+    rooms[roomName].peers.forEach((id) => {
+      videoStatusList.push({
+        playerId: id,
+        videoStatus: peers[id].videoStatus,
+      });
+    });
+
     // call callback from the client and send back the rtpCapabilities
-    callback({ rtpCapabilities });
+    callback({ rtpCapabilities, videoStatusList });
   });
 
   // Client emits a request to create server side Transport
@@ -266,16 +276,23 @@ io.on("connection", (socket) => {
     callback(producerList);
   });
 
-  const informConsumers = (roomName, socketId, id) => {
-    console.log(`just joined, id ${id} ${roomName}, ${socketId}`);
+  const informConsumers = (roomName, socketId, producerId) => {
+    console.log(
+      `just joined, producerId ${producerId} ${roomName}, ${socketId}`
+    );
 
     // A new producer just joined
     // let other clients to consume this producer
-    let socketIds = rooms[roomName].peers.filter((id) => id !== socketId);
-    socketIds.forEach((socketId) => {
-      const otherSocket = peers[socketId].socket;
+    let socketIds = rooms[roomName].peers.filter(
+      (peerSocketId) => peerSocketId !== socketId
+    );
+    socketIds.forEach((peerSocketId) => {
+      const otherSocket = peers[peerSocketId].socket;
       // use socket to send producer id to producer
-      otherSocket.emit("new-producer", { producerId: id });
+      otherSocket.emit("new-producer", {
+        producerId,
+        producerSocketId: socketId,
+      });
     });
   };
 
