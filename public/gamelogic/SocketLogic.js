@@ -650,14 +650,12 @@ export function handleCameraClick() {
   let playerId = socket.id;
   if (!streams[playerId]) return;
 
+  isCameraOn = !isCameraOn;
   streams[playerId].getVideoTracks().forEach((track) => {
-    track.enabled = !track.enabled;
+    track.enabled = isCameraOn;
   });
 
-  isCameraOn = !isCameraOn;
   updateVideoStatus(playerId, isCameraOn, isMikeOn);
-
-  // 서버로 상태 정보를 보낸다.
   socket.emit("updateVideoStatus", { camera: isCameraOn, mike: isMikeOn });
 }
 
@@ -665,15 +663,12 @@ export function handleMikeClick() {
   let playerId = socket.id;
   if (!streams[playerId]) return;
 
+  isMikeOn = !isMikeOn;
   streams[playerId].getAudioTracks().forEach((track) => {
-    console.log(track);
-    track.enabled = !track.enabled;
+    track.enabled = isMikeOn;
   });
 
-  isMikeOn = !isMikeOn;
   updateVideoStatus(playerId, isCameraOn, isMikeOn);
-
-  // 서버로 상태 정보를 보낸다.
   socket.emit("updateVideoStatus", { camera: isCameraOn, mike: isMikeOn });
 }
 
@@ -709,7 +704,7 @@ async function changeDevice(aElement, localName) {
     let constraints =
       localName === "camera"
         ? {
-            audio: true,
+            audio: false,
             video: {
               deviceId: { exact: deviceId },
               width: {
@@ -739,13 +734,8 @@ async function changeDevice(aElement, localName) {
         ? myStream.getVideoTracks()[0]
         : myStream.getAudioTracks()[0];
 
-    streams[socket.id].removeTrack(prevTrack);
     streams[socket.id].addTrack(newTrack);
-
-    // 현재 flag에 따라 처리한다.
-    localName === "camera"
-      ? (newTrack.enabled = isCameraOn)
-      : (newTrack.enabled = isMikeOn);
+    streams[socket.id].removeTrack(prevTrack);
 
     // 마이크의 경우 이전 음성 인식 처리를 교체해준다.
     if (localName === "mike") {
@@ -754,6 +744,19 @@ async function changeDevice(aElement, localName) {
       releaseVoiceRegcognition(socket.id);
       addVoiceRecognition(newAudioStream, videoDiv, socket.id);
     }
+
+    // 회의방인 경우 트랙을 변경해준다.
+    let sceneName = getCurScene().sceneName;
+    if (sceneName === "HouseScene") {
+      let producer = localName === "mike" ? audioProducer : videoProducer;
+      producer.replaceTrack({ track: newTrack });
+    }
+
+    // fix: track enabled를 설정해도 값이 자동으로 변경되는 이슈 수정 (replaceTrack에서 약간의 시간이 필요한 것 같다)
+    setTimeout(() => {
+      newTrack.enabled = localName === "camera" ? isCameraOn : isMikeOn;
+      console.log("newTrack.enabled = " + newTrack.enabled.toString());
+    }, 25);
 
     curDeviceEl.innerText = aElement.innerText;
     console.log(`changed device ${aElement.innerText}`);
