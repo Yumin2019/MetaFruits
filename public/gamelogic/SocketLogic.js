@@ -177,6 +177,7 @@ let audioParams;
 let videoParams = { params };
 let consumingTransports = []; // remoteProducerId array
 let streams = {};
+let audioRecognitions = {}; // {socketId: { javascriptNode, analyser, microphone, audioContext}}
 
 let isCameraOn = true;
 let isMikeOn = true;
@@ -208,10 +209,13 @@ function addVoiceRecognition(audioStream, videoDiv, id) {
         if (socket.id === id && mikeTest) colorPids(average);
       };
 
-      // javascriptNode.disconnect();
-      // analyser.disconnect();
-      // microphone.disconnect();
-      // audioContext.close();
+      // 리소스 정리를 위해 음성 인식과 관련된 정보를 저장한다.
+      audioRecognitions[id] = {
+        javascriptNode,
+        analyser,
+        microphone,
+        audioContext,
+      };
     }
   } catch (error) {}
 }
@@ -673,6 +677,18 @@ export function handleMikeClick() {
   socket.emit("updateVideoStatus", { camera: isCameraOn, mike: isMikeOn });
 }
 
+function releaseVoiceRegcognition(id) {
+  // 음성 인식 관련된 콜백을 정리한다.
+  const { javascriptNode, analyser, microphone, audioContext } =
+    audioRecognitions[id];
+
+  javascriptNode.disconnect();
+  analyser.disconnect();
+  microphone.disconnect();
+  audioContext.close();
+  delete audioRecognitions[id];
+}
+
 async function changeDevice(aElement, localName) {
   let curDeviceEl = document.getElementById(`${localName}DropdownDiv`);
   let deviceId = aElement.getAttribute("href");
@@ -730,6 +746,14 @@ async function changeDevice(aElement, localName) {
     localName === "camera"
       ? (newTrack.enabled = isCameraOn)
       : (newTrack.enabled = isMikeOn);
+
+    // 마이크의 경우 이전 음성 인식 처리를 교체해준다.
+    if (localName === "mike") {
+      let newAudioStream = new MediaStream([newTrack]);
+      let videoDiv = document.getElementById(`video-div-${socket.id}`);
+      releaseVoiceRegcognition(socket.id);
+      addVoiceRecognition(newAudioStream, videoDiv, socket.id);
+    }
 
     curDeviceEl.innerText = aElement.innerText;
     console.log(`changed device ${aElement.innerText}`);
