@@ -827,7 +827,7 @@ export async function getDevices(kind, localName) {
       deviceDropdown.appendChild(option);
     });
 
-    console.log(devices);
+    // console.log(devices);
   } catch (e) {
     console.log(e);
   }
