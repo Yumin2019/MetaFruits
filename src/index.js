@@ -85,9 +85,9 @@ const mediaCodecs = [
   },
 ];
 
+let allChattingList = [];
+let roomChattingList = [];
 const players = {};
-const allChattingList = [];
-const roomChattingList = [];
 const characters = [
   "apple",
   "strawberry",
@@ -161,6 +161,14 @@ const createWebRtcTransport = async (router) => {
     }
   });
 };
+
+// 채팅 정리 로직
+setInterval(() => {
+  allChattingList = [];
+  roomChattingList = [];
+  io.sockets.emit("clear");
+  console.log(`${new Date()} 1시간 마다 채팅 정리`);
+}, 1000 * 60 * 60);
 
 io.on("connection", (socket) => {
   // 미디어수프 코드

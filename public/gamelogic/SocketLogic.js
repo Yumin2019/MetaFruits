@@ -15,6 +15,13 @@ import { io } from "socket.io-client";
 
 export const socket = io();
 
+socket.on("clear", () => {
+  setChattingList([]);
+  game.global.allChattingList = [];
+  game.global.roomChattingList = [];
+  console.log(`${new Date()} 1시간 마다 채팅 정리`);
+});
+
 socket.on("sceneInfo", (data) => {
   const { sceneName, players, allChattingList, roomChattingList } = data;
   // console.log(`${sceneName}, count = ${Object.keys(players).length}`);
