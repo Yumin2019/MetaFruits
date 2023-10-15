@@ -1,11 +1,39 @@
 const express = require("express");
 const http = require("http");
+const https = require("https");
 const mediasoup = require("mediasoup");
 const socketIo = require("socket.io");
-
+const fs = require("fs");
 const app = express();
-const httpServer = http.createServer(app);
-const io = new socketIo.Server(httpServer);
+require("dotenv").config(); // .env file on root
+
+app.use(express.static("public"));
+app.use(express.static("dist"));
+
+app.get("*", (req, res) => {
+  res.sendFile(__dirname + "/../dist/index.html");
+});
+
+// 개발에서는 http를 프로덕션에서는 https를 사용한다.
+let server;
+if (process.env.NODE_ENV === "development") {
+  server = http.createServer(app);
+} else {
+  server = https.createServer({
+    key: fs.readFileSync(
+      `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/privkey.pem`
+    ),
+    cert: fs.readFileSync(
+      `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/cert.pem`
+    ),
+    ca: fs.readFileSync(
+      `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/chain.pem`
+    ),
+  });
+}
+
+const io = new socketIo.Server(server);
+server.listen(process.env.PORT || 3000);
 
 let worker;
 let rooms = {}; // { roomName1: { Router, peers: [ socketId1, ... ] }, ...}
@@ -589,12 +617,3 @@ io.on("connection", (socket) => {
     socket.to(sceneName).emit("exitPlayer", { sceneName, playerId: socket.id });
   });
 });
-
-app.use(express.static("public"));
-app.use(express.static("dist"));
-
-app.get("*", (req, res) => {
-  res.sendFile(__dirname + "/../dist/index.html");
-});
-
-httpServer.listen(3000);
