@@ -19,17 +19,20 @@ let server;
 if (process.env.NODE_ENV === "development") {
   server = http.createServer(app);
 } else {
-  server = https.createServer({
-    key: fs.readFileSync(
-      `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/privkey.pem`
-    ),
-    cert: fs.readFileSync(
-      `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/cert.pem`
-    ),
-    ca: fs.readFileSync(
-      `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/chain.pem`
-    ),
-  });
+  server = https.createServer(
+    {
+      key: fs.readFileSync(
+        `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/privkey.pem`
+      ),
+      cert: fs.readFileSync(
+        `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/cert.pem`
+      ),
+      ca: fs.readFileSync(
+        `/etc/letsencrypt/live/${process.env.DOMAIN_NAME}/chain.pem`
+      ),
+    },
+    app
+  );
 }
 
 const io = new socketIo.Server(server);
