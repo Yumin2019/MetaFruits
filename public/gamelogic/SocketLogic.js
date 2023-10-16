@@ -365,24 +365,35 @@ function releaseVideoInfo(remoteProducerId) {
 }
 
 export const getLocalStream = () => {
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true, // true
-      video: {
-        width: {
-          min: 180,
-          max: 180,
+  navigator.getUserMedia =
+    navigator.mediaDevices.getUserMedia ||
+    navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia;
+
+  if (navigator.getUserMedia) {
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: true, // true
+        video: {
+          width: {
+            min: 180,
+            max: 180,
+          },
+          height: {
+            min: 120,
+            max: 120,
+          },
         },
-        height: {
-          min: 120,
-          max: 120,
-        },
-      },
-    })
-    .then(streamSuccess)
-    .catch((error) => {
-      console.log(error.message);
-    });
+      })
+      .then(streamSuccess)
+      .catch((error) => {
+        console.log(error.message);
+      });
+  } else {
+    console.log("getUserMedia() not available.");
+  }
 };
 
 // A device is an endpoint connecting to a Router on the

@@ -1,4 +1,4 @@
-import { divideMessage } from "../gameLogic/GameFunc.js";
+import { divideMessage, isMobile } from "../gameLogic/GameFunc.js";
 import { exitRoom, joinRoom, socket } from "../gameLogic/SocketLogic.js";
 import Player from "../object/Player.js";
 import Phaser from "phaser";
@@ -249,6 +249,10 @@ export default class GameScene extends Phaser.Scene {
       .setScroll(this.mapWidth * 0.45, this.mapHeight * 0.45)
       .ignore(this.minimapBackground); // ignore background object
 
+    if (this.joystick) {
+      this.minimap.ignore([this.joystick.base, this.joystick.thumb]);
+    }
+
     // 미니앱이 off 상태인 경우, 생성까지만 진행한다.
     if (!this.game.global.minimap) {
       this.minimapBackground.setActive(false).setVisible(false);
@@ -356,6 +360,20 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createPlayer() {
+    if (!isMobile) {
+      // 조이스틱 for Mobile web
+      let margin = 15;
+      this.joystick = this.plugins.get("rexVirtualJoystick").add(this, {
+        x: this.game.config.width - 50 - margin,
+        y: 50 + margin,
+        radius: 25,
+        base: this.add.circle(0, 0, 50, 0x888888).setDepth(100),
+        thumb: this.add.circle(0, 0, 25, 0xcccccc).setDepth(100),
+        fixed: true,
+        enable: true,
+      });
+    }
+
     this.player = new Player({
       isMyInfo: true,
       scene: this,
@@ -363,6 +381,7 @@ export default class GameScene extends Phaser.Scene {
       y: 400,
       texture: "cute_fruits",
       frame: `${this.game.global.character}_idle_1`,
+      joystick: this.joystick,
     });
 
     this.player.setCollisionGroup(this.playerCollisionGroup);
@@ -460,20 +479,23 @@ export default class GameScene extends Phaser.Scene {
   }
 
   static updatePlayer(scene, info) {
-    const { x, y, flipX, curAnim, playerId, name } = info;
-    let player = scene.otherPlayers[playerId].player;
-    let nameText = scene.otherPlayers[playerId].nameText;
+    // fix: 로딩 전에 처리되는 경우 catch
+    try {
+      const { x, y, flipX, curAnim, playerId, name } = info;
+      let player = scene.otherPlayers[playerId].player;
+      let nameText = scene.otherPlayers[playerId].nameText;
 
-    player.x = x;
-    player.y = y;
-    player.flipX = flipX;
-    player.curAnim = curAnim;
-    player.setFlipX(flipX);
-    player.anims.play(curAnim, true);
-    nameText.setText(name);
+      player.x = x;
+      player.y = y;
+      player.flipX = flipX;
+      player.curAnim = curAnim;
+      player.setFlipX(flipX);
+      player.anims.play(curAnim, true);
+      nameText.setText(name);
 
-    // update name texta
-    nameText.x = player.x - nameText.width * 0.5;
-    nameText.y = player.y - player.height * 0.5 - nameText.height;
+      // update name texta
+      nameText.x = player.x - nameText.width * 0.5;
+      nameText.y = player.y - player.height * 0.5 - nameText.height;
+    } catch (error) {}
   }
 }

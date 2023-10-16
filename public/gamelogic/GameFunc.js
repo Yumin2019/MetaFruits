@@ -95,3 +95,5 @@ export function colorPids(vol) {
     pid.style.backgroundColor = "#99d9ea";
   }
 }
+
+export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);

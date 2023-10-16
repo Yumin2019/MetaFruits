@@ -27,6 +27,7 @@
     "nodemon-webpack-plugin": "^4.8.1",
     "phaser": "^3.60.0",
     "phaser-matter-collision-plugin": "^1.0.0",
+    "phaser3-rex-plugins": "^1.60.6",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2"
   },

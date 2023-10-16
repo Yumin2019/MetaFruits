@@ -4,7 +4,7 @@ import Phaser from "phaser";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
   constructor(data) {
-    let { scene, x, y, texture, frame, isMyInfo, playerId } = data;
+    let { scene, x, y, texture, frame, isMyInfo, playerId, joystick } = data;
     super(scene.matter.world, x, y, texture, frame);
     this.scene.add.existing(this);
 
@@ -26,6 +26,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     this.setExistingBody(compoundBody);
     this.setFixedRotation();
+    this.joystick = joystick;
     this.isKeyPressed = false;
     this.isMyInfo = isMyInfo;
     this.playerId = playerId;
@@ -61,17 +62,23 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     // 플레이어 이동
     const speed = 5.0;
     let playerVelocity = new Phaser.Math.Vector2();
-    if (this.inputKeys.left.isDown) {
+    if (this.inputKeys.left.isDown || (this.joystick && this.joystick.left)) {
       playerVelocity.x = -1;
       this.setFlipX(true);
-    } else if (this.inputKeys.right.isDown) {
+    } else if (
+      this.inputKeys.right.isDown ||
+      (this.joystick && this.joystick.right)
+    ) {
       playerVelocity.x = 1;
       this.setFlipX(false);
     }
 
-    if (this.inputKeys.up.isDown) {
+    if (this.inputKeys.up.isDown || (this.joystick && this.joystick.up)) {
       playerVelocity.y = -1;
-    } else if (this.inputKeys.down.isDown) {
+    } else if (
+      this.inputKeys.down.isDown ||
+      (this.joystick && this.joystick.down)
+    ) {
       playerVelocity.y = 1;
     }
 

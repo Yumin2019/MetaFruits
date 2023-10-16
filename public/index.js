@@ -2,6 +2,7 @@ import GameScene from "./scene/GameScene.js";
 import HouseScene from "./scene/HouseScene.js";
 import MainScene from "./scene/MainScene.js";
 import PhaserMatterCollisionPlugin from "phaser-matter-collision-plugin";
+import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-plugin.js";
 
 const config = {
   type: Phaser.CANVAS,
@@ -27,6 +28,13 @@ const config = {
     },
   },
   plugins: {
+    global: [
+      {
+        key: "rexVirtualJoystick",
+        plugin: VirtualJoystickPlugin,
+        start: true,
+      },
+    ],
     scene: [
       {
         plugin: PhaserMatterCollisionPlugin,
