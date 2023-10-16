@@ -377,7 +377,7 @@ export const getLocalStream = () => {
       .getUserMedia({
         audio: true, // true
         video: isMobile
-          ? { width: true, height: true }
+          ? true
           : {
               width: {
                 min: 180,
@@ -726,7 +726,7 @@ async function changeDevice(aElement, localName) {
         ? {
             audio: false,
             video: isMobile
-              ? { deviceId: { exact: deviceId }, width: true, height: true }
+              ? { deviceId: { exact: deviceId } }
               : {
                   deviceId: { exact: deviceId },
                   width: {
