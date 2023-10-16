@@ -360,7 +360,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createPlayer() {
-    if (!isMobile) {
+    if (isMobile) {
       // 조이스틱 for Mobile web
       let margin = 15;
       this.joystick = this.plugins.get("rexVirtualJoystick").add(this, {

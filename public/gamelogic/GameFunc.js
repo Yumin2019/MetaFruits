@@ -96,4 +96,6 @@ export function colorPids(vol) {
   }
 }
 
-export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+export const isMobile = /iPhone|iPad|iPod|Android/i.test(
+  window.navigator.userAgent
+);
