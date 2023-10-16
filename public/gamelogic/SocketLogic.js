@@ -5,6 +5,7 @@ import {
   addChatting,
   colorPids,
   hideElement,
+  isMobile,
   setChattingList,
   setMyPlayer,
   showElement,
@@ -286,7 +287,7 @@ function createOtherVideoDiv(id, cameraStaus, mikeStatus) {
     // Video, Audio
     `<video id="video-${id}" class="video" style="display: ${
       !cameraStaus ? "none" : "block"
-    }"; autoplay></video>` +
+    }"; autoplay playsInline muted></video>` +
     `<audio id="audio-${id}" autoplay></audio>` +
     // Video Status
     `<div id="video-status-${id}" class="video-status">` +
@@ -308,7 +309,7 @@ function createMyVideoDiv(id, stream) {
     // video-cover
     `<div id="video-cover-${id}" class="video-cover" style="display: none;">카메라 OFF</div>` +
     // video
-    `<video id="video-${id}" class="video" autoplay></video>` +
+    `<video id="video-${id}" class="video" autoplay playsInline muted></video>` +
     // video-status
     `<div id="video-status-${id}" class="video-status">cam: ✔️ mike: ✔️</div>`;
 
@@ -363,7 +364,6 @@ function releaseVideoInfo(remoteProducerId) {
   );
   if (videoDiv) parent.removeChild(videoDiv);
 }
-
 export const getLocalStream = () => {
   navigator.getUserMedia =
     navigator.mediaDevices.getUserMedia ||
@@ -376,16 +376,18 @@ export const getLocalStream = () => {
     navigator.mediaDevices
       .getUserMedia({
         audio: true, // true
-        video: {
-          width: {
-            min: 180,
-            max: 180,
-          },
-          height: {
-            min: 120,
-            max: 120,
-          },
-        },
+        video: isMobile
+          ? { width: true, height: true }
+          : {
+              width: {
+                min: 180,
+                max: 180,
+              },
+              height: {
+                min: 120,
+                max: 120,
+              },
+            },
       })
       .then(streamSuccess)
       .catch((error) => {
@@ -723,17 +725,19 @@ async function changeDevice(aElement, localName) {
       localName === "camera"
         ? {
             audio: false,
-            video: {
-              deviceId: { exact: deviceId },
-              width: {
-                min: 180,
-                max: 180,
-              },
-              height: {
-                min: 120,
-                max: 120,
-              },
-            },
+            video: isMobile
+              ? { deviceId: { exact: deviceId }, width: true, height: true }
+              : {
+                  deviceId: { exact: deviceId },
+                  width: {
+                    min: 180,
+                    max: 180,
+                  },
+                  height: {
+                    min: 120,
+                    max: 120,
+                  },
+                },
           }
         : {
             audio: { deviceId: { exact: deviceId } },
