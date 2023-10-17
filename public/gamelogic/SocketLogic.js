@@ -16,6 +16,10 @@ import { io } from "socket.io-client";
 
 export const socket = io();
 
+socket.on("connect", (socket) => {
+  console.log("connection");
+});
+
 socket.on("clear", () => {
   setChattingList([]);
   game.global.allChattingList = [];
@@ -229,15 +233,19 @@ function addVoiceRecognition(audioStream, videoDiv, id) {
 }
 
 const streamSuccess = async (stream) => {
+  console.log("streamSuccess");
   // 스트림이 들어오면 영상 뷰를 추가한다.
   let playerId = socket.id;
   streams[playerId] = stream;
+  console.log(`playerId = ${playerId}`);
 
   if (!stream) {
     console.log("stream is undefined");
   }
 
+  console.log(streams);
   console.log(streams[playerId]);
+
   console.log(stream.getAudioTracks()[0]);
   console.log(stream.getVideoTracks()[0]);
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
