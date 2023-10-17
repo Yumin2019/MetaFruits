@@ -48,6 +48,9 @@ const config = {
 export var game = new Phaser.Game(config);
 game.global = {
   minimap: true,
+  esc: false,
+  bgm: true,
+  otherSound: true,
   character: "apple",
   name: "",
   playerId: "",

@@ -48,11 +48,11 @@ export default class GameScene extends Phaser.Scene {
     this.door = this.sound.add("door", { loop: false, volume: 0.5 });
     this.button = this.sound.add("button", { loop: false, volume: 0.5 });
 
-    this.music.play();
+    if (this.game.global.bgm) this.music.play();
   }
 
   static playButtonEffect(scene) {
-    scene.button.play();
+    if (scene.game.global.otherSound) scene.button.play();
   }
 
   static setName(scene, name) {
@@ -152,11 +152,17 @@ export default class GameScene extends Phaser.Scene {
 
   updateTextInfo() {
     // update left top info text
-    this.posText.setText(
-      `x: ${Math.round(this.player.x)}\ny: ${Math.round(
-        this.player.y
-      )}\nfps: ${Math.round(this.game.loop.actualFps)}`
-    );
+    if (!this.game.global.esc) {
+      this.posText.setText(
+        `x: ${Math.round(this.player.x)} y: ${Math.round(
+          this.player.y
+        )}\nfps: ${Math.round(this.game.loop.actualFps)}\n\nbgm: 1(${
+          this.game.global.bgm ? "on" : "off"
+        })\nsound: 2(${
+          this.game.global.otherSound ? "on" : "off"
+        })\nstatus: esc\nmove: wasd`
+      );
+    }
 
     // update name text
     this.nameText.x = this.player.x - this.nameText.width * 0.5;
@@ -271,6 +277,20 @@ export default class GameScene extends Phaser.Scene {
     else scene.cameras.remove(scene.minimap, false);
   }
 
+  static toggleBgm(scene) {
+    scene.game.global.bgm = !scene.game.global.bgm;
+    scene.game.global.bgm ? scene.music.play() : scene.music.stop();
+  }
+
+  static toggleOtherSound(scene) {
+    scene.game.global.otherSound = !scene.game.global.otherSound;
+  }
+
+  static toggleESC(scene) {
+    scene.game.global.esc = !scene.game.global.esc;
+    if (scene.game.global.esc) scene.posText.setText("");
+  }
+
   createPortal(portalData) {
     const { portalName, destScene, x, y, width, height } = portalData;
 
@@ -281,7 +301,8 @@ export default class GameScene extends Phaser.Scene {
         pair.bodyB.label === "playerSensor"
       ) {
         this.music.stop();
-        this.door.play();
+
+        if (this.game.global.otherSound) this.door.play();
 
         // 충돌시 장면 전환(Fade 효과)
         this.initialized = false;
@@ -391,6 +412,9 @@ export default class GameScene extends Phaser.Scene {
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
       minimap: Phaser.Input.Keyboard.KeyCodes.M,
+      bgm: Phaser.Input.Keyboard.KeyCodes.ONE,
+      otherSound: Phaser.Input.Keyboard.KeyCodes.TWO,
+      esc: Phaser.Input.Keyboard.KeyCodes.ESC,
     });
   }
 

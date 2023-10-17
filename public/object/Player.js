@@ -27,7 +27,10 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.setExistingBody(compoundBody);
     this.setFixedRotation();
     this.joystick = joystick;
-    this.isKeyPressed = false;
+    this.isKeyMPressed = false;
+    this.isKeyOnePressed = false;
+    this.isKeyTwoPressed = false;
+    this.isKeyESCPressed = false;
     this.isMyInfo = isMyInfo;
     this.playerId = playerId;
     this.oldPosition = {
@@ -47,16 +50,52 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
   // this function is only called by my player
   update() {
-    // 미니맵 키
+    // 미니맵 키 M
     if (this.inputKeys.minimap.isDown) {
-      if (!this.isKeyPressed) {
-        this.isKeyPressed = true;
+      if (!this.isKeyMPressed) {
+        this.isKeyMPressed = true;
         GameScene.toggleMinimap(this.scene);
       }
     }
 
     if (this.inputKeys.minimap.isUp) {
-      this.isKeyPressed = false;
+      this.isKeyMPressed = false;
+    }
+
+    // 배경음악 키 1
+    if (this.inputKeys.bgm.isDown) {
+      if (!this.isKeyOnePressed) {
+        this.isKeyOnePressed = true;
+        GameScene.toggleBgm(this.scene);
+      }
+    }
+
+    if (this.inputKeys.bgm.isUp) {
+      this.isKeyOnePressed = false;
+    }
+
+    // 버튼 효과음 키 2
+    if (this.inputKeys.otherSound.isDown) {
+      if (!this.isKeyTwoPressed) {
+        this.isKeyTwoPressed = true;
+        GameScene.toggleOtherSound(this.scene);
+      }
+    }
+
+    if (this.inputKeys.otherSound.isUp) {
+      this.isKeyTwoPressed = false;
+    }
+
+    // 상태키 ESC
+    if (this.inputKeys.esc.isDown) {
+      if (!this.isKeyESCPressed) {
+        this.isKeyESCPressed = true;
+        GameScene.toggleESC(this.scene);
+      }
+    }
+
+    if (this.inputKeys.esc.isUp) {
+      this.isKeyESCPressed = false;
     }
 
     // 플레이어 이동
