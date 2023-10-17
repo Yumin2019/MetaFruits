@@ -233,8 +233,13 @@ const streamSuccess = async (stream) => {
   let playerId = socket.id;
   streams[playerId] = stream;
 
+  if (!stream) {
+    console.log("stream is undefined");
+  }
+
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
+
   createMyVideoDiv(socket.id, stream);
 
   // speaker 기본값으로 설정
