@@ -237,6 +237,7 @@ const streamSuccess = async (stream) => {
     console.log("stream is undefined");
   }
 
+  console.log(streams[playerId]);
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
 
