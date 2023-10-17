@@ -238,6 +238,8 @@ const streamSuccess = async (stream) => {
   }
 
   console.log(streams[playerId]);
+  console.log(stream.getAudioTracks()[0]);
+  console.log(stream.getVideoTracks()[0]);
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
 
