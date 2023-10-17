@@ -17,7 +17,8 @@ import { io } from "socket.io-client";
 export const socket = io();
 
 socket.on("connect", (socket) => {
-  console.log("connection");
+  // fix: 소켓 연결 전에 stream을 추가하여 기기제어가 되지 않는 이슈 수정(undefined에 추가되었음)
+  getLocalStream();
 });
 
 socket.on("clear", () => {
@@ -233,24 +234,12 @@ function addVoiceRecognition(audioStream, videoDiv, id) {
 }
 
 const streamSuccess = async (stream) => {
-  console.log("streamSuccess");
   // 스트림이 들어오면 영상 뷰를 추가한다.
   let playerId = socket.id;
   streams[playerId] = stream;
-  console.log(`playerId = ${playerId}`);
 
-  if (!stream) {
-    console.log("stream is undefined");
-  }
-
-  console.log(streams);
-  console.log(streams[playerId]);
-
-  console.log(stream.getAudioTracks()[0]);
-  console.log(stream.getVideoTracks()[0]);
   audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
   videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
-
   createMyVideoDiv(socket.id, stream);
 
   // speaker 기본값으로 설정

@@ -320,6 +320,4 @@ window.onload = (e) => {
     game.input.keyboard.enabled = true;
     document.getElementById("chatting-input").blur();
   });
-
-  getLocalStream();
 };
